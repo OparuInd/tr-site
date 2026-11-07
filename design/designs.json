@@ -1,0 +1,262 @@
+[
+ {
+  "k": "carriage_arc",
+  "n": "One arc across the opening",
+  "base": "carriage",
+  "o": {
+   "glass": "full",
+   "arch": "opening",
+   "lites_w": 1
+  },
+  "rep": "white"
+ },
+ {
+  "k": "carriage_arc_door",
+  "n": "One arc per door",
+  "base": "carriage",
+  "o": {
+   "glass": "full",
+   "arch": "door",
+   "lites_w": 2
+  },
+  "rep": "swiss"
+ },
+ {
+  "k": "carriage_solid",
+  "n": "Carriage · cross-buck",
+  "base": "carriage",
+  "o": {
+   "glass": "none"
+  },
+  "rep": "whitetail"
+ },
+ {
+  "k": "rs_3x2",
+  "n": "3 × 2 lites over three panels",
+  "base": "rs",
+  "o": {
+   "glass": "divided",
+   "lites_w": 3,
+   "lites_h": 2,
+   "panel_style": "shaker"
+  },
+  "rep": "white"
+ },
+ {
+  "k": "rs_awning",
+  "n": "Awning row over three panels",
+  "base": "rs",
+  "o": {
+   "glass": "awning",
+   "lites_w": 3,
+   "lites_h": 2,
+   "panel_style": "shaker"
+  },
+  "rep": "behrgrey"
+ },
+ {
+  "k": "rs_xcross",
+  "n": "3 × 2 lites over X-cross",
+  "base": "rs",
+  "o": {
+   "glass": "divided",
+   "lites_w": 3,
+   "lites_h": 2,
+   "panel_style": "xcross"
+  },
+  "rep": "lightgrey"
+ },
+ {
+  "k": "rs_2x2",
+  "n": "2 × 2 lites over raised panels",
+  "base": "rs",
+  "o": {
+   "glass": "divided",
+   "lites_w": 2,
+   "lites_h": 2,
+   "panel_style": "raised"
+  },
+  "rep": "walnut"
+ },
+ {
+  "k": "rs_3x1",
+  "n": "3 × 1 lites over shaker",
+  "base": "rs",
+  "o": {
+   "glass": "divided",
+   "lites_w": 3,
+   "lites_h": 1,
+   "panel_style": "shaker"
+  },
+  "rep": "sapele"
+ },
+ {
+  "k": "rs_clear",
+  "n": "One clear lite over flat",
+  "base": "rs",
+  "o": {
+   "glass": "full",
+   "panel_style": "flat"
+  },
+  "rep": "coffee"
+ },
+ {
+  "k": "rs_4row",
+  "n": "4-lite row over V-groove",
+  "base": "rs",
+  "o": {
+   "glass": "divided",
+   "lites_w": 4,
+   "lites_h": 1,
+   "panel_style": "vgroove",
+   "vg_dir": "v",
+   "vg_n": 5
+  },
+  "rep": "cedar"
+ },
+ {
+  "k": "glass_panel",
+  "n": "Glass over a lower panel",
+  "base": "glasspanel",
+  "o": {},
+  "rep": "birch"
+ },
+ {
+  "k": "fullview",
+  "n": "Full-view · three bands",
+  "base": "fullview",
+  "o": {
+   "lites_h": 3
+  },
+  "rep": "tricorn"
+ },
+ {
+  "k": "fullview_clear",
+  "n": "Full-view · clear",
+  "base": "fullview",
+  "o": {
+   "lites_h": 1
+  },
+  "rep": "jet"
+ },
+ {
+  "k": "slab",
+  "n": "Plain",
+  "base": "slab",
+  "o": {
+   "lite_layout": "none"
+  },
+  "c": "seamless",
+  "rep": "falgray"
+ },
+ {
+  "k": "slab_single",
+  "n": "One lite · top",
+  "base": "slab",
+  "o": {
+   "lite_layout": "single"
+  },
+  "c": "v",
+  "rep": "cedar"
+ },
+ {
+  "k": "slab_squares",
+  "n": "Three squares down one side",
+  "base": "slab",
+  "o": {
+   "lite_layout": "squares_side"
+  },
+  "c": "seamless",
+  "rep": "whitewash"
+ },
+ {
+  "k": "slab_long",
+  "n": "Long panes down one side",
+  "base": "slab",
+  "o": {
+   "lite_layout": "long_side"
+  },
+  "c": "v",
+  "rep": "burgundy"
+ },
+ {
+  "k": "slab_offset",
+  "n": "Short + long · offset",
+  "base": "slab",
+  "o": {
+   "lite_layout": "offset"
+  },
+  "c": "paint",
+  "rep": "tricorn"
+ },
+ {
+  "k": "slab_tall",
+  "n": "One tall pane",
+  "base": "slab",
+  "o": {
+   "lite_layout": "verticals"
+  },
+  "c": "v",
+  "rep": "greywash"
+ },
+ {
+  "k": "slab_slim",
+  "n": "Slim band",
+  "base": "slab",
+  "o": {
+   "lite_layout": "slim"
+  },
+  "c": "metal",
+  "rep": "falgray"
+ },
+ {
+  "k": "slab_both",
+  "n": "Squares both sides",
+  "base": "slab",
+  "o": {
+   "lite_layout": "both_sides"
+  },
+  "c": "paint",
+  "rep": "portobello"
+ },
+ {
+  "k": "slab_trapezoid",
+  "n": "Trapezoid across the opening",
+  "base": "slab",
+  "o": {
+   "lite_layout": "trapezoid"
+  },
+  "c": "h",
+  "rep": "cedar"
+ },
+ {
+  "k": "slab_trap_door",
+  "n": "Trapezoid per door",
+  "base": "slab",
+  "o": {
+   "lite_layout": "trap_door"
+  },
+  "c": "h",
+  "rep": "walnut"
+ },
+ {
+  "k": "louvre",
+  "n": "Louvre",
+  "base": "slab",
+  "o": {
+   "lite_layout": "none"
+  },
+  "c": "louvre",
+  "rep": "cedar"
+ },
+ {
+  "k": "slab_patina",
+  "n": "Patina steel",
+  "base": "slab",
+  "o": {
+   "lite_layout": "none"
+  },
+  "c": "metal",
+  "rep": "patina"
+ }
+]
