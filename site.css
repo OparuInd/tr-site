@@ -48,8 +48,8 @@ main > section.hero--split { min-height: min(88svh, 820px) !important; }
 @media (min-width: 1024px) { .hero--split .hero-visual { min-height: 600px; } }
 
 /* ---------- nav ---------- */
-.nav__mark { display:inline-grid; place-items:center; width: 44px; height: 44px; background: var(--p-action); flex: none; }
-.nav__mark img { height: 34px; width: auto; display: block; }
+.nav__mark { display:inline-grid; place-items:center; height: 44px; flex: none; }
+.nav__mark img { height: 44px; width: auto; display: block; }
 .nav__logo { gap: 12px; font-family: var(--font-display); font-size: 22px; letter-spacing: .08em; text-transform: uppercase; }
 .nav { transition: box-shadow 220ms var(--ease-out), background-color 220ms var(--ease-out); }
 .nav.is-scrolled { box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgb(30 26 22 / .35); }
@@ -238,4 +238,4 @@ a { text-underline-offset: 3px; text-decoration-thickness: 1px; }
 @media (max-width: 720px){ .configurator { aspect-ratio:auto; height: 80vh; } }
 
 /* logo field and the quote button share one geometry */
-.nav .btn--primary, .nav .btn { height: 44px; display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
+.nav .btn--primary, .nav .btn { height: 44px; border-radius: 2px !important; display: inline-flex; align-items: center; padding-top: 0; padding-bottom: 0; }
