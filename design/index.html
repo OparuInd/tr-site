@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Design your door · BiFolded</title>
+<title>Build your opening · Tungsten Royce</title>
 <!--
   BiFolded · Design your door 1.0 (2026-09-14) · PUBLIC (publishable key only — no office key on this page, ever)
   Ryan: "This is supposed to be a web based selling tool on the website … not a gimmick, customer facing so we can quote
@@ -103,14 +103,14 @@
 .dmx{display:grid;grid-template-columns:1fr 64px 64px;gap:2px 6px;align-items:center;font-size:12px}.dmh{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;text-align:center}.dmn{padding:3px 0}.dmc{text-align:center;cursor:pointer;border:1px solid #ddd;border-radius:4px;padding:2px;color:#bbb}.dmc.y{color:#2a7;border-color:#2a7;background:#f0faf5}
 
 /* ---- THE SITE'S SYSTEM (bifolded.com): charcoal · bronze · display headlines · technical mono labels ---- */
-:root{--bg:#1a1a1a;--fg:#f5f5f5;--card:#1f1f1f;--sec:#2e2e2e;--mfg:#8c8c8c;--bd:#333;--acc:#a98b66;--accd:#6d5842;--purple:#a98b66;--gold:#a98b66;--ink:#f5f5f5;--line:#333;--muted:#8c8c8c;--warn:#e0a24a;--ok:#8fc69a;--mono:'JetBrains Mono',ui-monospace,Menlo,monospace}
+:root{--bg:#1a1a1a;--fg:#f5f5f5;--card:#1f1f1f;--sec:#2e2e2e;--mfg:#8c8c8c;--bd:#333;--acc:#942824;--accd:#5e1a17;--purple:#942824;--gold:#942824;--ink:#f5f5f5;--line:#333;--muted:#8c8c8c;--warn:#e0a24a;--ok:#8fc69a;--mono:'JetBrains Mono',ui-monospace,Menlo,monospace}
 body{background:var(--bg);color:var(--fg);font-family:'Inter','Familjen Grotesk',Helvetica,Arial,sans-serif}
 main{max-width:1280px;margin:0 auto 80px;padding:96px 24px 0}
 header.nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(26,26,26,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0;text-align:left}
 header.nav .in{max-width:1280px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:24px}
 header.nav .mark{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg)}header.nav .mark i{width:32px;height:32px;border:2px solid var(--acc);display:block;position:relative}header.nav .mark i:after{content:"";position:absolute;left:50%;top:4px;bottom:4px;border-right:1px solid var(--acc)}header.nav .mark b{font-family:'Familjen Grotesk',sans-serif;font-size:18px;letter-spacing:-.01em}
 header.nav .links{display:flex;gap:28px}header.nav .links a{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--mfg);text-decoration:none}header.nav .links a.on,header.nav .links a:hover{color:var(--acc)}
-header.nav .cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--acc);color:#111;padding:11px 18px;text-decoration:none;font-weight:600}
+header.nav .cta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;background:var(--acc);color:#fff;padding:11px 18px;text-decoration:none;font-weight:600}
 @media(max-width:900px){header.nav .links{display:none}}
 .card{background:transparent;border:0;border-radius:0;padding:28px 0;margin:0}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:12px}
@@ -118,12 +118,12 @@ h2{font-family:'Familjen Grotesk',sans-serif;color:var(--fg);font-size:44px;line
 .lead{margin:0 0 26px;color:var(--mfg);font-size:16px;max-width:640px}
 #stepper{padding:0;border-bottom:1px solid var(--bd)}.steps{gap:0}.steps button{flex:none;min-width:0;border:0;border-radius:0;background:transparent;color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:14px 18px 14px 0;font-weight:500}
 .steps button b{display:inline;font-size:11px;opacity:1;margin-right:8px;color:var(--accd)}.steps button.on{color:var(--fg);background:transparent}.steps button.on b{color:var(--acc)}.steps button.done{color:var(--acc)}
-#stepnav{border-top:1px solid var(--bd);padding:18px 0;border-bottom:0}#stepnav button{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;border-radius:0;padding:13px 22px;background:transparent;color:var(--fg);border:1px solid var(--bd)}#stepnav button.go{background:var(--acc);border-color:var(--acc);color:#111;font-weight:600}
+#stepnav{border-top:1px solid var(--bd);padding:18px 0;border-bottom:0}#stepnav button{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;border-radius:0;padding:13px 22px;background:transparent;color:var(--fg);border:1px solid var(--bd)}#stepnav button.go{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
 input,select,textarea{background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:0;font-family:var(--mono);font-size:14px;padding:11px 12px}
 .f label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--mfg);font-weight:500}
 .grp{border:1px solid var(--bd);border-radius:0;background:var(--card)}.grp .ttl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--acc);font-weight:500}
-button{border-radius:0;background:var(--sec);color:var(--fg);border:1px solid var(--bd);font-family:var(--mono);font-size:12px;letter-spacing:.08em}button.go{background:var(--acc);border-color:var(--acc);color:#111}
-.seggrp button{border-radius:0!important}.seggrp button.on{background:var(--acc);border-color:var(--acc);color:#111}
+button{border-radius:0;background:var(--sec);color:var(--fg);border:1px solid var(--bd);font-family:var(--mono);font-size:12px;letter-spacing:.08em}button.go{background:var(--acc);border-color:var(--acc);color:#fff}
+.seggrp button{border-radius:0!important}.seggrp button.on{background:var(--acc);border-color:var(--acc);color:#fff}
 .range{grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
 .rng{position:relative;background:var(--card);border:1px solid var(--bd);border-radius:0;box-shadow:none;overflow:hidden}.rng:hover{border-color:var(--acc)}.rng.on{border-color:var(--acc)}
 .rng .ph{aspect-ratio:4/3;background-size:cover;background-position:center;position:relative}.rng .ph.el svg{width:118%;height:118%;display:block;margin:-9% 0 0 -9%}
@@ -165,7 +165,7 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
 </style>
 <style>html.embed header.nav{display:none!important}</style><script>if(self!==top)document.documentElement.classList.add("embed")</script></head>
 <body>
-<header class="nav"><div class="in"><a class="mark" href="../"><i></i><b>TUNGSTEN ROYCE</b></a><nav class="links"><a href="../">HOME</a><a href="../bifold.html">BIFOLD</a><a href="../projects.html">PROJECTS</a><a class="on">DESIGN YOUR DOOR</a><a href="../quote.html">QUOTE</a></nav><a class="cta" href="#" onclick="stepShow(7);return false">GET A QUOTE</a></div><span id="modeseg" hidden><button></button><button></button></span></header>
+<header class="nav"><div class="in"><a class="mark" href="../"><img src="../img/tr-tile.png" alt="" style="height:32px;width:auto;display:block"><b>TUNGSTEN ROYCE</b></a><nav class="links"><a href="../">HOME</a><a href="../bifold.html">BIFOLD</a><a href="../projects.html">PROJECTS</a><a class="on">BUILD YOUR OPENING</a><a href="../quote.html">QUOTE</a></nav><a class="cta" href="#" onclick="stepShow(7);return false">GET A QUOTE</a></div><span id="modeseg" hidden><button></button><button></button></span></header>
 <main>
 <div class="card" id="stepper" style="padding:8px 12px"><div class="steps" id="steps"></div></div>
 <div class="card step" id="step1"><div class="eyebrow">THE COLLECTION</div><h2>Discover the range</h2><p class="lead">Every door is built to your opening. Enter at your leisure.</p><div id="range" class="range"></div><div id="p2"></div></div>
@@ -881,7 +881,7 @@ function swatches(){
     $("sw_"+side).innerHTML=FIN.filter(f=>isOn("fin",f.k)||S["finish_"+side]===f.k).map(f=>'<div class="swb'+(S["finish_"+side]===f.k?" on":"")+'" style="background:'+f.hex+'" title="'+esc(f.n)+'" onclick="setFin(\''+side+'\',\''+f.k+'\')"><span class="nm">'+esc(f.sh||f.n)+'</span></div>').join("");
   }
 }
-function setFin(side,k){S["finish_"+side]=k;if(side==="out"&&finBy(k).type==="stain")S.clad_fin=k;if(side==="out")syncFamily();swatches();draw();if($("v3d").classList.contains("on"))mvShow();}
+function setFin(side,k){S["finish_"+side]=k;if(side==="out"&&finBy(k).type==="stain")S.clad_fin=k;if(side==="out")syncFamily();swatches();draw();if(window.driveCards)driveCards();if(window.lookCards)lookCards();if($("v3d").classList.contains("on"))mvShow();}
 function combo(o,i){S.finish_out=o;S.finish_in=i;swatches();draw();if($("v3d").classList.contains("on"))mvShow();}
 function setFold(v){ S.fold=v; [...$("foldseg").children].forEach((b,i)=>b.classList.toggle("on",[0,1/3,2/3,1][i]===v)); if($("viz3d").style.display!=="none"&&window.mvFold) mvFold(v*100); else draw(); }
 function setView(v){
@@ -996,7 +996,7 @@ function setS(o){ // write into the form controls that draw() reads, then redraw
     if(k==="finish_out"){ S.finish_out=v; if(window.syncFamily) syncFamily(); }
     S[k]=v;
   }
-  draw(); swatches(); lookCards();
+  draw(); swatches(); lookCards(); if(window.driveCards) driveCards();
 }
 function lookOpts(){
   const el=$("lookopts"); if(!el) return; const fam=FAMS.find(f=>f.k===S.family)||FAMS[0];
@@ -1018,7 +1018,7 @@ function lookOpts(){
   } else if(LOOK==="hardware"){
     const md=S.mandoor?S.mandoor.door:0;
     tiles=[{svg:tileSvg({}),n:"No man door",sub:"",on:!S.mandoor,go:()=>setS({mandoor:"none"})}].concat(
-      Array.from({length:Math.min(S.doors,4)},(_,i)=>({svg:tileSvg({mandoor:{door:i+1,hinge:"L"}}),n:"Man door · #"+(i+1),sub:"walk-through leaf",on:md===i+1,go:()=>setS({mandoor:String(i+1)})})));
+      Array.from({length:S.doors},(_,i)=>({svg:tileSvg({mandoor:{door:i+1,hinge:"L"}}),n:"Man door · leaf "+(i+1),sub:"",on:md===i+1,go:()=>setS({mandoor:String(i+1)})})));
     if(S.mandoor){ for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) for(const st of HWSETS.filter(h=>isOn("hwset",h.v))) tiles.push({svg:hwSvg(f.v,st.v),n:f.t,sub:st.t,on:S.hw_finish===f.v&&S.hw_set===st.v,go:()=>setS({hw_finish:f.v,hw_set:st.v})}); }
   } else if(LOOK==="panel"){
     const ok=fam.base==="carriage"||fam.base==="rs";
@@ -1043,12 +1043,12 @@ function driveCards(){
   const md=S.mandoor?S.mandoor.door:0;
   el.innerHTML='<div class="lookcards" style="grid-template-columns:repeat(2,1fr)">'
     +'<div class="lk"><div class="ph"><div class="hwrow" style="gap:0">'+driveSvg(true)+driveSvg(false)+'</div></div><div class="rn">Drive</div><div class="go">'+(S.motorized?"AUTOMATED":"MANUAL")+'</div></div>'
-    +'<div class="lk"><div class="ph crop">'+tileSvg({mandoor:S.mandoor||{door:Math.min(2,S.doors),hinge:"L"}})+'</div><div class="rn">Man door</div><div class="go">'+(S.mandoor?"LEAF #"+md+" · WALK-THROUGH":"NONE")+'</div></div></div>'
+    +'<div class="lk"><div class="ph crop">'+tileSvg({mandoor:S.mandoor||{door:Math.min(2,S.doors),hinge:"L"}})+'</div><div class="rn">Man door</div><div class="go">'+(S.mandoor?"LEAF "+md:"NONE")+'</div></div></div>'
     +'<div class="tiles" style="margin-bottom:22px">'
-    +'<div class="tile'+(S.motorized?" on":"")+'" onclick="setDrive(true)"><div class="ph">'+driveSvg(true)+'</div><div class="tn">Automated<span>operator on the track header · opens itself</span></div></div>'
-    +'<div class="tile'+(!S.motorized?" on":"")+'" onclick="setDrive(false)"><div class="ph">'+driveSvg(false)+'</div><div class="tn">Manual<span>fold it by hand · a man door is the way in</span></div></div>'
+    +'<div class="tile'+(S.motorized?" on":"")+'" onclick="setDrive(true)"><div class="ph">'+driveSvg(true)+'</div><div class="tn">Automated</div></div>'
+    +'<div class="tile'+(!S.motorized?" on":"")+'" onclick="setDrive(false)"><div class="ph">'+driveSvg(false)+'</div><div class="tn">Manual</div></div>'
     +'<div class="tile'+(!S.mandoor?" on":"")+'" onclick="setS({mandoor:\'none\'});driveCards()"><div class="ph">'+tileSvg({mandoor:null})+'</div><div class="tn">No man door</div></div>'
-    +Array.from({length:Math.min(S.doors,4)},(_,i)=>'<div class="tile'+(md===i+1?" on":"")+'" onclick="setS({mandoor:\''+(i+1)+'\'});driveCards()"><div class="ph">'+tileSvg({mandoor:{door:i+1,hinge:"L"}})+'</div><div class="tn">Man door · #'+(i+1)+'<span>walk-through leaf</span></div></div>').join("")
+    +Array.from({length:S.doors},(_,i)=>'<div class="tile'+(md===i+1?" on":"")+'" onclick="setS({mandoor:\''+(i+1)+'\'});driveCards()"><div class="ph">'+tileSvg({mandoor:{door:i+1,hinge:"L"}})+'</div><div class="tn">Man door · leaf '+(i+1)+'</div></div>').join("")
     +'</div>';
 }
 function setDrive(auto){ $("r_drive").value=auto?"motor":"manual"; $("r_drive").dataset.v=auto?"motor":"manual"; S.motorized=auto; draw(); driveCards(); }
@@ -1086,7 +1086,7 @@ async function sendEnquiry(){
     sp.glass&&sp.glass!=="none"?"glass "+sp.glass+" "+sp.lites+(sp.arch?" · arch "+sp.arch:""):"", sp.clad?"clad "+sp.clad:""].concat(sitNotes()).filter(Boolean).join(" · ");
   const r=await call({action:"enquiry",name,email,phone,site:$("q_site").value,website:$("q_web").value,
     interest:sp.family,size:ftin(S.width_in)+" × "+ftin(S.height_in),
-    config:{w:+(S.width_in/12).toFixed(2),h:+(S.height_in/12).toFixed(2),panels:S.doors,frame:sp.family,infill:(sp.glass&&sp.glass!=="none")?"glass "+sp.glass:"solid",automation:S.motorized?"automated":"manual",spec:sp},
+    config:{w:+(S.width_in/12).toFixed(2),h:+(S.height_in/12).toFixed(2),panels:S.doors,frame:sp.family,infill:(sp.glass&&sp.glass!=="none")?"glass "+sp.glass:"solid",automation:S.motorized?"automated":"manual",spec:sp,concept:conceptSpec()},
     message:"DESIGN YOUR DOOR — "+summary+(($("q_msg").value||"").trim()?"\n\n"+$("q_msg").value.trim():"")});
   if(!r.ok){ line.textContent=r.error||"We could not reach the server — please call us."; go.disabled=false; go.textContent="REQUEST A QUOTE"; return; }
   $("q_go").parentNode.style.display="none"; line.innerHTML='<b>Sent.</b> We will come back to you with a quote and your concept drawing.'+(r.label&&r.label!=="received"?' Your reference: <b>'+esc(r.label)+'</b>':'');
@@ -1169,9 +1169,8 @@ function draw(){
   document.querySelectorAll("#grpGlass,#grpPanel,#grpMan").forEach(g=>g.classList.toggle("empty",![...g.querySelectorAll(".f")].some(f=>f.style.display!=="none")));
   $("bmsg").textContent=(S.width_in>480||S.height_in>168)?"⚑ Boundary build — beyond the standard 40′ × 14′ envelope. We never say no: it saves, and the numbers get engineered.":"";
 }
-async function saveConcept(){
-  const title=$("r_title").value.trim();
-  if(title.length<2){$("smsg").textContent="Give it the customer / job name first.";return;}
+/* 7 Nov — the office spec shape (TR 2.0 Concept reads it): what the enquiry carries so the concept opens in the Concept Renderer */
+function conceptSpec(){
   const fo=finBy(S.finish_out),fi=finBy(S.finish_in);
   const fam=FAMS.find(f=>f.k===S.family);
   const isClad=fam.base==="tbclad";
@@ -1198,6 +1197,12 @@ async function saveConcept(){
       .concat(isClad?["Cladding: "+S.clad_look+(S.clad_look!=="metal"?" — "+finBy(S.clad_fin).n:"")]:[]),
   };
   if(isClad){spec.cladding="tr";spec.clad={material:(S.clad_look==="metal"?"Decorative metal":finBy(S.clad_fin).n+" "+S.clad_look),pattern:S.clad_look,proud:1,oal:3.5,weight:0,spec_file:false};}
+  return spec;
+}
+async function saveConcept(){
+  const title=$("r_title").value.trim();
+  if(title.length<2){$("smsg").textContent="Give it the customer / job name first.";return;}
+  const spec=conceptSpec();
   const brand=$("r_brand").dataset.v||"tr";
   const r=await call({action:"concept_save",title,stage:"concept",brand,spec,by:"Renderer"});
   if(!r.ok){$("smsg").textContent=r.error;return;}
