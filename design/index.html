@@ -362,7 +362,7 @@ function cladFor(s){ // the profile the drawing uses: the picked one, else the f
   const look=s.clad_look||"horizontal", want=look==="windowed"?"vertical":look;
   return CLADP.find(c=>cladLookOf(c,{clad_orient:""})===want)||CLADP[0];
 }
-async function loadCladProfiles(){ try{ const r=await fetch(ENDPOINT,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cladding_profiles"})}); const j=await r.json(); if(j&&j.ok&&j.rows&&j.rows.length){ CLADP=j.rows.filter(x=>x.profile&&x.profile.type&&!/TR-\d{4}-\d{4}|\bU\d+\b/.test(String(x.name||"")));   // a job-built row (job number / unit in its name) never shows on the website if(S.clad_id&&!cladProfById(S.clad_id)) S.clad_id=null; if(typeof draw==="function"){ draw(); if(window.lookCards) lookCards(); } } }catch(e){} }
+async function loadCladProfiles(){ try{ const r=await fetch(ENDPOINT,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cladding_profiles"})}); const j=await r.json(); if(j&&j.ok&&j.rows&&j.rows.length){ CLADP=j.rows.filter(x=>x.profile&&x.profile.type&&!/TR-\d{4}-\d{4}|\bU\d+\b/.test(String(x.name||""))); /* a job-built row (job number / unit in its name) never shows on the website */ if(S.clad_id&&!cladProfById(S.clad_id)) S.clad_id=null; if(typeof draw==="function"){ draw(); if(window.lookCards) lookCards(); } } }catch(e){} }
 let FAMON={}; // enabled map, synced to catalog group renderer_fams
 
 // ---------- RENDERER ----------
