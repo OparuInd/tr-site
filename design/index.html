@@ -160,6 +160,7 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .tile{background:var(--card);border:1px solid var(--bd);cursor:pointer;overflow:hidden}.tile:hover{border-color:var(--accd)}.tile.on{border-color:var(--acc)}
 .tile .ph{aspect-ratio:4/3;overflow:hidden;background:#141414}.tile .ph svg{width:100%;height:100%;display:block}
+.tile .ph:has(.cladtile){aspect-ratio:1/1}.cladtile{display:grid;grid-template-rows:1fr 62px;width:100%;height:100%}.cladtile>svg{min-height:0}.cladtile .sect{background:#161616;border-top:1px solid #333;padding:4px 8px 0;overflow:hidden}.cladtile .sect svg{width:100%;height:100%;display:block}
 .tile .tn{padding:9px 11px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}.tile .tn span{display:block;color:var(--mfg);font-size:10px;margin-top:2px}
 
 </style>
@@ -332,6 +333,36 @@ const FAMS=[   // sig = the family's signature: what the card shows and what pic
  {k:"tbcladw",glb:"fam_tbclad_h",near:true,n:"Clad — windowed",base:"tbclad",clad:"windowed",glass:"none",fin:"cedar"},
 ];
 const CLADS=[{v:"horizontal",t:"Horizontal wood"},{v:"vertical",t:"Vertical slat"},{v:"metal",t:"Metal"},{v:"louvre",t:"Louvre"},{v:"windowed",t:"Windowed + clad"}];
+/* CLADDING PROFILES (7 Nov 2026) — the shop's own profiles from the book (tr-intake `cladding_profiles`: id · name · look · material ·
+   profile geometry). The website draws each one from its true section — width, cover, thickness, lap / V-joint / reveal / louvre angle —
+   on the door in 2D, and loads the matching clad_<geometry>.glb in 3D. No weights, no costs: that is the office's side. */
+let CLADP=[
+ {id:"book:tg_v_3.5_3.25",name:"Resawn T&G 3/8",look:"vertical",material:"Walnut / white oak",profile:{type:"tg",orient:"V",fin_w:3.5,cover:3.25,fin_t:0.375}},
+ {id:"book:ship_h_5.5_5",name:"Shiplap 1/2 × 5-1/2",look:"horizontal",material:"Western red cedar",profile:{type:"ship",orient:"H",fin_w:5.5,cover:5,fin_t:0.5}},
+ {id:"book:flat_v_5.5_6",name:"Flat boards 3/4 × 5-1/2 with reveal",look:"vertical",material:"Western red cedar",profile:{type:"flat",orient:"V",fin_w:5.5,cover:6,fin_t:0.75,reveal:0.5}},
+ {id:"book:bb_v_7.25_2.5",name:"Board & batten 3/4",look:"vertical",material:"Western red cedar",profile:{type:"bb",orient:"V",fin_w:7.25,cover:7.25,fin_t:0.75,batten_w:2.5,batten_t:0.75,batten_gap:4.75,batten_min:1,batten_max:5.5,gap_min:0.5,gap_max:12,step:0.125}},
+ {id:"book:bb_v_3_1.5",name:"Battens 1-1/2 × 1-1/2 at 1-1/2",look:"vertical",material:"Western red cedar",profile:{type:"bb",orient:"V",fin_w:3,cover:3,fin_t:0.75,batten_w:1.5,batten_t:1.5,batten_gap:1.5,batten_min:1,batten_max:5.5,gap_min:0.5,gap_max:12,step:0.125}},
+ {id:"book:louvre_h_2.6875_2.625_15",name:"Louvre 15° — 5/8 × 2-11/16",look:"louvre",material:null,profile:{type:"louvre",orient:"H",fin_w:2.6875,cover:2.625,fin_t:0.625,angle:15}},
+ {id:"book:sheet",name:"Patina steel sheet — 16 ga",look:"metal",material:"Steel",profile:{type:"sheet",orient:"H",fin_t:0.0598}}
+];
+const CLAD_GLBS=["clad_bb_v_7.25_2.5_0.75","clad_bb_h_7.25_2.5_0.75","clad_bb_v_3_1.5_1.5","clad_bb_h_3_1.5_1.5","clad_tg_v_3.5_3.25","clad_tg_h_3.5_3.25","clad_ship_h_5.5_5","clad_ship_v_5.5_5","clad_flat_v_5.5_6","clad_flat_h_5.5_6","clad_louvre_h_2.6875_2.625_15"];   // built by clad_glb.py, on verify.bifolded.com
+function cladGlb(p,s){ if(!p||!p.profile||p.profile.type==="sheet") return null; const g=p.profile, n=x=>String(+x); const k="clad_"+g.type+"_"+cladOrient(p,s).toLowerCase()+"_"+n(g.fin_w)+"_"+(g.type==="bb"?n(g.batten_w||2.5)+"_"+n(g.batten_t||0.75):n(g.cover)+(g.type==="louvre"?"_"+n(g.angle||15):"")); return CLAD_GLBS.includes(k)?k:null; }
+function cladProfById(id){ return CLADP.find(c=>c.id===id)||null; }
+const r8=x=>Math.round(x*8)/8;
+function battenOf(p,s){ const g=p&&p.profile||{}; if(g.type!=="bb") return null; const b=(s||S).batten||{}; const cl=(v,lo,hi,d)=>{ v=+v; if(!(v>0)) v=d; return r8(Math.min(hi,Math.max(lo,v))); };
+  const dw=+g.batten_w||2.5, dgap=g.batten_gap!=null?+g.batten_gap:Math.max(0.5,(+g.cover||+g.fin_w||7.25)-dw);
+  const w=cl(b.w,+g.batten_min||1,+g.batten_max||6,dw), t=cl(b.t,0.5,2,+g.batten_t||0.75), gap=cl(b.gap,+g.gap_min||0.5,+g.gap_max||12,dgap);
+  return {w,t,gap,pitch:r8(w+gap)}; }
+function battenStd(p,s){ const g=p&&p.profile||{}, b=battenOf(p,s); if(!b) return true; const d=battenOf(p,{batten:null}); return b.w===d.w&&b.t===d.t&&b.gap===d.gap; }
+function frac8(v){ const w=Math.floor(v), f=Math.round((v-w)*8); if(!f) return String(w); const d=f%2?8:f%4?4:2, n=f/(8/d); return (w?w+"-":"")+n+"/"+d; }
+function cladOrient(p,s){ const g=p&&p.profile||{}; if(g.type==="sheet"||g.type==="louvre") return "H"; const o=String((s||S).clad_orient||g.orient||"H").toUpperCase(); return o==="V"?"V":"H"; }
+function cladLookOf(p,s){ const g=p&&p.profile||{}; return g.type==="sheet"?"metal":g.type==="louvre"?"louvre":(cladOrient(p,s)==="V"?"vertical":"horizontal"); }
+function cladFor(s){ // the profile the drawing uses: the picked one, else the first that matches the family's look
+  const p=cladProfById(s.clad_id); if(p) return p;
+  const look=s.clad_look||"horizontal", want=look==="windowed"?"vertical":look;
+  return CLADP.find(c=>cladLookOf(c,{clad_orient:""})===want)||CLADP[0];
+}
+async function loadCladProfiles(){ try{ const r=await fetch(ENDPOINT,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cladding_profiles"})}); const j=await r.json(); if(j&&j.ok&&j.rows&&j.rows.length){ CLADP=j.rows.filter(x=>x.profile&&x.profile.type&&!/TR-\d{4}-\d{4}|\bU\d+\b/.test(String(x.name||"")));   // a job-built row (job number / unit in its name) never shows on the website if(S.clad_id&&!cladProfById(S.clad_id)) S.clad_id=null; if(typeof draw==="function"){ draw(); if(window.lookCards) lookCards(); } } }catch(e){} }
 let FAMON={}; // enabled map, synced to catalog group renderer_fams
 
 // ---------- RENDERER ----------
@@ -409,6 +440,50 @@ const HWFIN={
   orb:   {n:"Oil-rubbed bronze",  g:["#7a5f47","#3c2b1e","#5e4632","#241a12"], solid:"#3f2e20", dark:"#1d150e", pin:"#9a7a55"}
 };
 const hwFinBy=(k)=>HWFIN[k]||HWFIN.nickel;
+/* CLADDING FROM ITS SECTION (7 Nov 2026): every board drawn at the profile's own width and cover on the leaf, in inches × sc.
+   T&G: the V at each joint. Shiplap: the lap — the upper board's bottom edge stands proud of the one below, so a shadow line under it.
+   Flat with reveal: boards with the slab showing dark in the gap. Louvre: each slat leaning out at its angle, lit face above, the shadow it throws below. */
+function cladBoards(p,px,y0,pw,uh,sc,hex,orient){
+  const g=(p&&p.profile)||{type:"ship",orient:"H",fin_w:5.5,cover:5,fin_t:0.5};
+  const horiz=g.type==="louvre"?true:(String(orient||g.orient||"H").toUpperCase()==="H");
+  const bb=g.type==="bb"?(battenOf(p)||{w:2.5,t:0.75,pitch:+g.cover||7.25}):null;
+  const cover=bb?bb.pitch:Math.max(0.75,+g.cover||+g.fin_w||5), finw=Math.max(0.5,+g.fin_w||cover), t=Math.max(0.25,+g.fin_t||0.5);
+  const span=horiz?uh:pw, L=horiz?pw:uh, n=Math.ceil(span/(cover*sc)), o=[];
+  const dark=shade(hex,0.38), mid=shade(hex,0.62), lit=shade(hex,1.18), gap=shade(hex,0.22);
+  // a band across the leaf at s..s+len (inches along the stacking axis), drawn as a rect in the leaf's frame
+  const band=(s0,len,fill,op)=>{ const a=s0*sc, b=Math.min(span,(s0+len)*sc); if(b<=a) return ""; return horiz
+    ? '<rect x="'+px+'" y="'+(y0+uh-b)+'" width="'+pw+'" height="'+(b-a)+'" fill="'+fill+'"'+(op!=null?' opacity="'+op+'"':'')+'/>'
+    : '<rect x="'+(px+a)+'" y="'+y0+'" width="'+(b-a)+'" height="'+uh+'" fill="'+fill+'"'+(op!=null?' opacity="'+op+'"':'')+'/>'; };
+  for(let k=0;k<n;k++){ const y=k*cover; if(y*sc>=span) break;
+    if(g.type==="tg"){           // the V joint: a dark line with a lit edge beside it
+      const c=Math.max(0.6,0.09*sc);
+      if(k>0){ o.push(band(y-0.09,0.18,dark,0.85)); o.push(band(y+0.09,0.12,lit,0.35)); }
+    } else if(g.type==="ship"){  // the board above stands proud by half its thickness: its shadow lies on this board's top
+      const sh=Math.max(0.35,t*0.9);
+      o.push(band(y+cover-sh,sh,dark,0.55)); o.push(band(y+cover-sh*0.35,sh*0.35,dark,0.5));
+      o.push(band(y+cover,0.1,lit,0.45));                                      // the lit bottom edge of the board above
+    } else if(g.type==="flat"){  // boards finw wide, the reveal between shows the slab in shadow
+      const rv=Math.max(0,cover-finw);
+      if(rv>0){ o.push(band(y+finw,rv,gap,0.92)); o.push(band(y+finw-0.08,0.08,mid,0.6)); o.push(band(y+finw+rv,0.08,lit,0.4)); }
+      else if(k>0) o.push(band(y-0.05,0.1,dark,0.7));
+    } else if(g.type==="bb"){     // boards butted: a hairline joint; the battens are drawn after the loop
+      if(k>0) o.push(band(y-0.03,0.06,dark,0.6));
+    } else if(g.type==="louvre"){ // slat face lit above, its underside in shadow; the top of each slat tucks under the one above
+      const ang=(+g.angle||15)*Math.PI/180, face=finw*Math.cos(ang), lip=t*Math.sin(ang);
+      o.push(band(y,cover,shade(hex,1.08),0.55));
+      o.push(band(y+cover-face*0.35,face*0.35,dark,0.62)); o.push(band(y+cover-0.12,0.12,gap,0.85));
+      o.push(band(y,Math.max(0.1,lip),lit,0.5));
+    }
+  }
+  if(bb){ const bw=bb.w, sh=Math.max(0.12,bb.t*0.55), spanIn=span/sc;
+    const joints=[0]; for(let k=1;k*cover<spanIn-0.5;k++) joints.push(k*cover); joints.push(spanIn);
+    for(const j of joints){ const a=Math.max(0,Math.min(spanIn-bw,j-bw/2));
+      o.push(band(a-sh,sh,gap,0.75));                               // the shadow the batten throws on the board
+      o.push(band(a,bw,shade(hex,1.14),0.72));                      // the batten face, proud and square to the light
+      o.push(band(a,0.12,lit,0.7)); o.push(band(a+bw-0.12,0.12,dark,0.7)); }  // its two edges
+  }
+  return o.join("");
+}
 function renderDoorViz(s,opts){
   opts=opts||{};
   const scale=opts.mini?0.35:1;
@@ -423,7 +498,9 @@ function renderDoorViz(s,opts){
   const W0=Math.max(24,+s.width_in||192),H0=Math.max(24,+s.height_in||96), aW0=opts.mini?CW-26:CW-160, aH0=opts.mini?CH-34:CH-200, SC0=Math.min(aW0/W0,aH0/H0);
   // material fill
   let fill, isWood=fin.type==="stain";
-  const cladLook=base==="tbclad"?(card.clad||s.clad_look||"horizontal"):s.clad_look;
+  const cladP=base==="tbclad"?cladFor(Object.assign({},s,{clad_look:card.clad||s.clad_look})):null;
+  const cladLook=base==="tbclad"?(cladP?cladLookOf(cladP,s):(card.clad||s.clad_look||"horizontal")):s.clad_look;
+  const cladWin=base==="tbclad"&&(card.clad||s.clad_look)==="windowed";
   if(fam==="tbclad"&&view==="out"){
     if(cladLook==="metal"&&SKINS[(finBy(s.clad_fin||"falgray")||{}).k]){ // a skinned sheet: patina steel
       const cf=finBy(s.clad_fin); defs.push(grain(uid+"w",cf.hex,shade(cf.hex,0.72),true,SC0,cf.k)); fill="url(#"+uid+"w)"; isWood=true;
@@ -434,7 +511,7 @@ function renderDoorViz(s,opts){
       fill="url(#"+uid+"m)";isWood=false;
     } else {
       const cf=finBy(s.clad_fin||"cedar");
-      defs.push(grain(uid+"w",cf.hex,shade(cf.hex,0.72),cladLook!=="horizontal"&&cladLook!=="louvre",SC0,cf.k));
+      defs.push(grain(uid+"w",cf.hex,shade(cf.hex,0.72),cladLook==="vertical",SC0,cf.k));
       fill="url(#"+uid+"w)";isWood=true;
     }
   } else if(isWood){
@@ -677,26 +754,11 @@ function renderDoorViz(s,opts){
       defs.push('<linearGradient id="'+uid+'sh'+i+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.16"/><stop offset="0.5" stop-color="#fff" stop-opacity="0.02"/><stop offset="1" stop-color="#000" stop-opacity="0.12"/></linearGradient>');
       out.push('<rect x="'+px+'" y="'+y0+'" width="'+pw+'" height="'+uh+'" fill="url(#'+uid+'sh'+i+')"/>');
     } else if(fam==="tbclad"&&view==="out"){
-      if(cladLook==="horizontal"){
-        const bh=Math.max(7,5.5*sc), bands=Math.max(4,Math.round(uh/bh)), ch2=finBy(s.clad_fin||"cedar").hex;
-        for(let b2=0;b2<bands;b2++){const by=y0+uh*b2/bands, hh2=uh/bands;
-          out.push('<rect x="'+px+'" y="'+by+'" width="'+pw+'" height="'+hh2+'" fill="'+shade(ch2,b2%2?0.97:1.04)+'" opacity="0.35"/>');
-          out.push('<line x1="'+px+'" y1="'+(by+hh2-1)+'" x2="'+(px+pw)+'" y2="'+(by+hh2-1)+'" stroke="'+shade(ch2,0.45)+'" stroke-width="1.8"/>');}
-      } else if(cladLook==="vertical"||cladLook==="windowed"){
-        const ribs=Math.max(4,Math.round(pw/(sc*4)));
-        for(let r3=0;r3<ribs;r3++){const rx=px+pw*r3/ribs;
-          out.push('<rect x="'+rx+'" y="'+y0+'" width="'+(pw/ribs*0.62)+'" height="'+uh+'" fill="'+shade(finBy(s.clad_fin||"cedar").hex,1.06)+'" opacity="0.5"/>');
-          out.push('<line x1="'+rx+'" y1="'+y0+'" x2="'+rx+'" y2="'+(y0+uh)+'" stroke="'+shade("#6b4a2f",0.7)+'" stroke-width="2"/>');}
-      } else if(cladLook==="metal"){
+      if(cladLook==="metal"){
         // one flat sheet per leaf: a hemmed edge catches the light on the left, falls into shade on the right
         out.push('<rect x="'+px+'" y="'+y0+'" width="'+Math.max(1,0.4*sc)+'" height="'+uh+'" fill="#fff" opacity="0.22"/><rect x="'+(px+pw-Math.max(1,0.4*sc))+'" y="'+y0+'" width="'+Math.max(1,0.4*sc)+'" height="'+uh+'" fill="#000" opacity="0.22"/>');
-      } else if(cladLook==="louvre"){
-        // angled slats at a 3.5" pitch: the lit face on top, the shadow under each slat
-        const pitch=Math.max(6,3.5*sc), slats=Math.max(6,Math.round(uh/pitch)), sh=uh/slats, ch=finBy(s.clad_fin||"cedar").hex;
-        for(let l2=0;l2<slats;l2++){const sy2=y0+sh*l2;
-          out.push('<rect x="'+px+'" y="'+sy2+'" width="'+pw+'" height="'+(sh*0.62)+'" fill="'+shade(ch,1.16)+'"/>');
-          out.push('<rect x="'+px+'" y="'+(sy2+sh*0.62)+'" width="'+pw+'" height="'+(sh*0.38)+'" fill="'+shade(ch,0.52)+'"/>');
-          out.push('<line x1="'+px+'" y1="'+(sy2+sh*0.62)+'" x2="'+(px+pw)+'" y2="'+(sy2+sh*0.62)+'" stroke="'+shade(ch,0.35)+'" stroke-width="1"/>');}
+      } else {
+        out.push(cladBoards(cladP,px,y0,pw,uh,sc,finBy(s.clad_fin||"cedar").hex,cladOrient(cladP,s)));
       }
     }
     if(base==="tb"||fam==="tbclad"){ // MODERN LITES cut through the slab: the layout, in leaf inches, drawn to scale
@@ -857,7 +919,7 @@ function pickFam(k,quiet){
   S.glass=f.glass==="band"?"divided":f.glass==="big"?"big":"none";
   if(k==="hardwood")S.finish_out="walnut";
   if(k==="okoume")S.finish_out="coffee";
-  if(f.base==="tbclad"){S.finish_in="white";if(f.clad)S.clad_look=f.clad;if(f.clad==="metal")S.finish_out="falgray";else S.finish_out="cedar";}
+  if(f.base==="tbclad"){S.finish_in="white";if(f.clad)S.clad_look=f.clad;if(f.clad==="metal")S.finish_out="falgray";else S.finish_out="cedar"; S.clad_id=null; S.clad_orient=f.clad==="vertical"||f.clad==="windowed"?"V":f.clad==="horizontal"?"H":""; S.clad_id=(cladFor(Object.assign({},S,{clad_look:f.clad||S.clad_look}))||{}).id||null;}
   if(f.tb==="flush")S.finish_out="falgray";
   const g=f.sig||{};
   if(g.glass){S.glass=g.glass; if($("r_glass").querySelector('option[value="'+g.glass+'"]')){$("r_glass").value=g.glass;$("r_glass").dataset.v=g.glass;}}
@@ -948,13 +1010,34 @@ function cfgPick(n,sp){
   $("r_doors").value=String(n); $("r_doors").dataset.v=String(n); sel("r_split",splitsFor(n),sp,()=>{draw();famCards();}); sel("r_mandoor",mdOpts(n),"none",draw);
   S.doors=n; S.split=sp; draw(); cfgCards(); famCards(); stepShow(3);
 }
+loadCladProfiles();
 fetch('designs.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(list=>{ if(Array.isArray(list)&&list.length){ DESIGNS.length=0; list.forEach(d=>DESIGNS.push(d)); if(STEP===1) rangeCards(); } }).catch(()=>{});
 /* ---- LOOK, the Coastal way (Ryan): cards for FINISH · GLASS · HARDWARE · PANEL, each with a background graphic of what we
    offer; click one → the options as realistic renders of THEIR door with that option applied; click a render to take it. ---- */
-const LOOKS=[{k:"finish",n:"Finish"},{k:"glass",n:"Glass"},{k:"hardware",n:"Hardware"},{k:"panel",n:"Panel"},{k:"position",n:"Position"}];
+const LOOKS=[{k:"finish",n:"Finish"},{k:"cladding",n:"Cladding"},{k:"glass",n:"Glass"},{k:"hardware",n:"Hardware"},{k:"panel",n:"Panel"},{k:"position",n:"Position"}];
 let LOOK="finish";
 const miniS=o=>Object.assign({},S,{view:"out"},o);
 function tileSvg(o){ return renderDoorViz(miniS(o),{mini:true}); }
+/* the profile's section, drawn to scale: two boards and the joint between them (what the shop mills) */
+function cladSectionSvg(p){
+  const g=(p&&p.profile)||{}; const t=+g.fin_t||0.5, w=+g.fin_w||5.5; let cover=+g.cover||w; const type=g.type||"ship";
+  const bbp=type==="bb"?(battenOf(p)||{w:2.5,t:0.75,pitch:cover}):null; if(bbp) cover=bbp.pitch;
+  const W=230,H=58; const span=type==="louvre"?cover*2.1:cover*1.25; const S_=Math.min(W/span,(H-10)/Math.max(t*2.2,(type==="louvre"?w*Math.sin((+g.angle||15)*Math.PI/180)+t:0)+(bbp?t+bbp.t:0)+0.2)); const x0=0, base=H-6;
+  const pt=(x,y)=>(x0+x*S_).toFixed(1)+","+(base-y*S_).toFixed(1);
+  const poly=(pts,f)=>'<polygon points="'+pts.map(q=>pt(q[0],q[1])).join(" ")+'" fill="'+f+'" stroke="#1a1a1a" stroke-width="1" stroke-linejoin="round"/>';
+  let o='<rect x="0" y="'+base+'" width="'+W+'" height="6" fill="#3a3a3a"/>';   // the slab
+  const c=0.09, wood="#c89a6a";
+  if(type==="sheet") return '<svg viewBox="0 0 '+W+' '+H+'">'+o+'<rect x="0" y="'+(base-5)+'" width="'+W+'" height="5" fill="#8a8f94" stroke="#1a1a1a" stroke-width="1"/></svg>';
+  const start=type==="louvre"?-cover*0.9:-(cover-span*0.5);
+  for(let k=0;k<4;k++){ const y=start+k*cover;
+    if(type==="tg") o+=poly([[y,0],[y+cover,0],[y+cover,t-c],[y+cover-c,t],[y+c,t],[y,t-c]],wood);
+    else if(type==="ship") o+=poly([[y,0],[y+w,0],[y+w,t/2],[y+cover,t/2],[y+cover,t],[y,t]],wood);
+    else if(type==="flat") o+=poly([[y,0],[y+w,0],[y+w,t-c],[y+w-c,t],[y+c,t],[y,t-c]],wood);
+    else if(type==="bb"){ const b=bbp; const pitch=b.pitch; const yy=start+k*pitch; o+=poly([[yy,0],[yy+pitch,0],[yy+pitch,t],[yy,t]],wood); o+=poly([[yy+pitch-b.w/2,t],[yy+pitch+b.w/2,t],[yy+pitch+b.w/2,t+b.t],[yy+pitch-b.w/2,t+b.t]],"#d9ac78"); }
+    else if(type==="louvre"){ const a=(+g.angle||15)*Math.PI/180, d=[-Math.cos(a),Math.sin(a)], n=[Math.sin(a),Math.cos(a)]; const A=[(k+1)*cover+start,0], B=[A[0]+w*d[0],A[1]+w*d[1]]; o+=poly([A,B,[B[0]+t*n[0],B[1]+t*n[1]],[A[0]+t*n[0],A[1]+t*n[1]]],wood); }
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMax meet">'+o+'</svg>';
+}
 function hwSvg(fk,set,big){
   // one lever set drawn large: escutcheons, deadbolt cylinder, lever or oval knob, in the finish's metal gradient
   const HF=hwFinBy(fk), id="hw"+(GID++), sq=set==="sqlever", knob=set==="rndknob";
@@ -974,14 +1057,17 @@ function lookCards(){
     glass:'<div class="crop">'+tileSvg({})+'</div>',
     hardware:'<div class="hwrow">'+["nickel","black","orb"].map(k=>hwSvg(k,"sqlever")).join("")+'</div>',
     panel:'<div class="crop lower">'+tileSvg({glass:"none"})+'</div>',
-    position:'<div class="crop">'+tileSvg({fold:2/3})+'</div>'
+    position:'<div class="crop">'+tileSvg({fold:2/3})+'</div>',
+    cladding:'<div class="crop lower">'+tileSvg({glass:"none"})+'</div>'
   };
   const sub={finish:fo.n,glass:S.glass==="none"?"none":(S.glass==="full"?"full lite":S.lites_w+" × "+S.lites_h)+((FAMS.find(f=>f.k===S.family)||{}).base==="carriage"?" · arch "+(S.arch||"opening"):""),hardware:S.mandoor?hwFinBy(S.hw_finish).n+" · "+(HWSETS.find(h=>h.v===S.hw_set)||{}).t:"no man door",panel:((FAMS.find(f=>f.k===S.family)||{}).base||"").startsWith("tb")?((CONSTR.find(c=>c.v===(S.construction||"seamless"))||{}).t):((PANELS.find(p=>p.v===S.panel_style)||{}).t||"family default"),position:[[0,"closed"],[1/3,"a third open"],[2/3,"two thirds open"],[1,"open"]].find(p=>p[0]===(+S.fold||0))[1]};
   const famB=(FAMS.find(f=>f.k===S.family)||{}).base; if(famB==="tb"||famB==="tbclad"){ const ll=(LITE_LAYOUTS.find(l=>l.v===S.lite_layout)||{}).t; sub.glass=ll||((FAMS.find(f=>f.k===S.family)||{}).clad==="windowed"?"One lite · top":"none"); }
-  el.innerHTML=LOOKS.map(l=>'<div class="lk'+(LOOK===l.k?" on":"")+'" onclick="lookPick(\''+l.k+'\')"><div class="ph">'+bg[l.k]+'</div><div class="rn">'+l.n+'</div><div class="go">'+esc(sub[l.k])+'</div></div>').join("");
+  const isClad=famB==="tbclad"; sub.cladding=isClad?(((cladFor(S)||{}).name||"")+(cladFor(S)&&!/sheet|louvre/.test((cladFor(S).profile||{}).type)?(cladOrient(cladFor(S),S)==="V"?" · vertical":" · horizontal"):"")+(battenOf(cladFor(S),S)?" · "+frac8(battenOf(cladFor(S),S).w)+"″ battens":"")):""; if(!isClad&&LOOK==="cladding") LOOK="finish";
+  el.innerHTML=LOOKS.filter(l=>l.k!=="cladding"||isClad).map(l=>'<div class="lk'+(LOOK===l.k?" on":"")+'" onclick="lookPick(\''+l.k+'\')"><div class="ph">'+bg[l.k]+'</div><div class="rn">'+l.n+'</div><div class="go">'+esc(sub[l.k])+'</div></div>').join("");
   lookOpts();
 }
 function lookPick(k){ LOOK=k; lookCards(); }
+window.battenStep=function(key,dir){ const cp=cladFor(S); const b=battenOf(cp,S); if(!b) return; b[key]=r8(b[key]+dir*0.125); S.batten={w:b.w,t:b.t,gap:b.gap}; setS({batten:battenOf(cp,S)}); };
 function setS(o){ // write into the form controls that draw() reads, then redraw
   for(const [k,v] of Object.entries(o)){
     if(k==="glass"){ $("r_glass").value=v; $("r_glass").dataset.v=v; }
@@ -1020,13 +1106,23 @@ function lookOpts(){
     tiles=[{svg:tileSvg({}),n:"No man door",sub:"",on:!S.mandoor,go:()=>setS({mandoor:"none"})}].concat(
       Array.from({length:S.doors},(_,i)=>({svg:tileSvg({mandoor:{door:i+1,hinge:"L"}}),n:"Man door · leaf "+(i+1),sub:"",on:md===i+1,go:()=>setS({mandoor:String(i+1)})})));
     if(S.mandoor){ for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) for(const st of HWSETS.filter(h=>isOn("hwset",h.v))) tiles.push({svg:hwSvg(f.v,st.v),n:f.t,sub:st.t,on:S.hw_finish===f.v&&S.hw_set===st.v,go:()=>setS({hw_finish:f.v,hw_set:st.v})}); }
+  } else if(LOOK==="cladding"){
+    // every profile the shop makes, drawn on THEIR door, with its section beside the name
+    const cur=cladFor(S);
+    tiles=CLADP.map(p=>({on:cur&&cur.id===p.id,svg:'<div class="cladtile">'+tileSvg(Object.assign({clad_id:p.id,clad_look:cladLookOf(p,S)},cladLookOf(p)==="metal"?{clad_fin:"patina",finish_out:"patina"}:(finBy(S.finish_out).type!=="stain"?{clad_fin:"cedar",finish_out:"cedar"}:{})))+'<div class="sect">'+cladSectionSvg(p)+'</div></div>',n:p.name,sub:p.material||"",go:()=>setS(Object.assign({clad_id:p.id,batten:null},cladLookOf(p)==="metal"?{clad_fin:"patina",finish_out:"patina"}:(finBy(S.finish_out).type!=="stain"?{clad_fin:"cedar",finish_out:"cedar"}:{})))}));
   } else if(LOOK==="panel"){
     const ok=fam.base==="carriage"||fam.base==="rs";
     if(fam.base==="tb"||fam.base==="tbclad") tiles=CONSTR.map(c=>({on:(S.construction||"seamless")===c.v,svg:tileSvg({family:c.fam,clad_look:(FAMS.find(f=>f.k===c.fam)||{}).clad||S.clad_look}),n:c.t,sub:"",go:()=>setConstruction(c.v)}));
     else tiles=ok?PANELS.filter(p=>isOn("panel",p.v)).map(p=>({on:(S.panel_style||"auto")===p.v,svg:tileSvg({panel_style:p.v}),n:p.t,sub:"",go:()=>setS({panel_style:p.v})})):[{svg:tileSvg({}),n:"This door has no panel field",sub:"",on:true,go:()=>{}}];
   }
   window.__lookGo=tiles.map(t=>t.go);
-  el.innerHTML='<div class="tiles">'+tiles.map((t,i)=>'<div class="tile'+(t.on?" on":"")+'" onclick="__lookGo['+i+']()"><div class="ph">'+t.svg+'</div><div class="tn">'+esc(t.n)+(t.sub?'<span>'+esc(t.sub)+'</span>':'')+'</div></div>').join("")+'</div>';
+  let pre="";
+  if(LOOK==="cladding"){ const cp=cladFor(S), fixed=cp&&cp.profile&&(cp.profile.type==="louvre"||cp.profile.type==="sheet"); const o=cladOrient(cp,S);
+    pre='<div class="frow" style="margin:0 0 12px"><div class="f"><label>Boards run</label><div class="seggrp">'+[["H","Horizontal"],["V","Vertical"]].map(([k,t])=>'<button type="button" class="seg'+(o===k?" on":"")+'"'+(fixed?' disabled':'')+' onclick="setS({clad_orient:\''+k+'\'})">'+t+'</button>').join("")+'</div></div>';
+    const b=battenOf(cp,S); if(b){ const st=(key,label)=>'<div class="f"><label>'+label+'</label><div class="seggrp"><button type="button" class="seg" onclick="battenStep(\''+key+'\',-1)">−</button><button type="button" class="seg" style="min-width:66px;font-variant-numeric:tabular-nums" disabled>'+frac8(b[key])+'″</button><button type="button" class="seg" onclick="battenStep(\''+key+'\',1)">+</button></div></div>';
+      pre+=st("w","Batten width")+st("t","Batten thickness")+st("gap","Gap between"); }
+    pre+='</div>'; }
+  el.innerHTML=pre+'<div class="tiles">'+tiles.map((t,i)=>'<div class="tile'+(t.on?" on":"")+'" onclick="__lookGo['+i+']()"><div class="ph">'+t.svg+'</div><div class="tn">'+esc(t.n)+(t.sub?'<span>'+esc(t.sub)+'</span>':'')+'</div></div>').join("")+'</div>';
 }
 window.lookPick=lookPick;
 
@@ -1073,7 +1169,7 @@ const ftin=v=>{const f=Math.floor(v/12),i=Math.round((v-f*12)*8)/8;return f+"′
 function specNow(){
   const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const fo=finBy(S.finish_out),fi=finBy(S.finish_in);
   return {family:fam.n,family_key:fam.k,doors:S.doors,split:S.split,width_in:S.width_in,height_in:S.height_in,motorized:S.motorized,
-    glass:S.glass,lites:S.lites_w+"×"+S.lites_h,arch:fam.base==="carriage"?S.arch:undefined,panel:S.panel_style,finish_out:fo.n,finish_in:fi.n,clad:fam.base==="tbclad"?(fam.clad||S.clad_look):undefined,
+    glass:S.glass,lites:S.lites_w+"×"+S.lites_h,arch:fam.base==="carriage"?S.arch:undefined,panel:S.panel_style,finish_out:fo.n,finish_in:fi.n,clad:fam.base==="tbclad"?(((cladFor(S)||{}).name||fam.clad||S.clad_look)+(cladFor(S)&&!/sheet|louvre/.test((cladFor(S).profile||{}).type)?(cladOrient(cladFor(S),S)==="V"?" vertical":" horizontal"):"")):undefined,
     mandoor:S.mandoor||undefined,situations:sitSpec()};
 }
 async function sendEnquiry(){
@@ -1113,14 +1209,15 @@ function mvPlay(){ if(MV.playing){ MV.playing=false; $("mvplay").textContent=MV.
 function mvChips(extra){
   const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const fo=finBy(S.finish_out);
   const chips=[fo.n, "16′ × 8′ · 3L / 3R geometry"];
-  if(fam.near||!fam.glb) chips.push("⚑ nearest geometry · "+(fam.glb||"fam_rs_band").replace("fam_",""));
+  if(fam.base==="tbclad"){ const cp=cladFor(S); if(cp&&cladGlb(cp,S)){ chips.push(cp.name+(!/sheet|louvre/.test((cp.profile||{}).type)?(cladOrient(cp,S)==="V"?" · vertical":" · horizontal"):"")); if(!battenStd(cp,S)){ const b=battenOf(cp,S), g=cp.profile; const d=battenOf(cp,{batten:null}); chips.push("⚑ 3D shows "+frac8(d.w)+" × "+frac8(d.t)+" battens, "+frac8(d.gap)+" between — yours: "+frac8(b.w)+" × "+frac8(b.t)+", "+frac8(b.gap)+" between"); } } else if(cp&&cp.profile&&cp.profile.type!=="sheet") chips.push("⚑ 3D shows the nearest profile"); }
+  else if(fam.near||!fam.glb) chips.push("⚑ nearest geometry · "+(fam.glb||"fam_rs_band").replace("fam_",""));
   if(MV.variants.length&&!MV.variants.includes("fin_"+S.finish_out)) chips.push("⚑ no 3D swatch for "+fo.n+" yet");
   if(extra) chips.push(extra);
   $("mvchips").innerHTML=chips.map(c=>'<span class="mvchip'+(c.startsWith("⚑")?" warn":"")+'">'+esc(c)+'</span>').join("");
 }
 function mvApply(){ const mv=$("mv"); const v="fin_"+S.finish_out; try{ mv.variantName=v; }catch(e){} mvChips(); }
 function mvShow(){
-  mvLoadLib(); const mv=$("mv"); const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const glb=(fam.glb||"fam_rs_band");
+  mvLoadLib(); const mv=$("mv"); const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const glb=(fam.base==="tbclad"&&cladGlb(cladFor(S),S))||(fam.glb||"fam_rs_band");
   if(!mv.dataset.wired){ mv.dataset.wired="1";
     mv.addEventListener("load",()=>{ const a=mv.availableAnimations||[]; if(a.length) mv.animationName=a[0]; mvFrame(); MV.dur=mv.duration||2; MV.variants=mv.availableVariants||[]; mvFold(+$("mvfold").value); mvApply(); });
     mv.addEventListener("error",()=>mvChips("⚑ geometry did not load — "+glb));
@@ -1135,6 +1232,7 @@ function draw(){
   S.doors=+$("r_doors").dataset.v||4;S.split=$("r_split").dataset.v||balanced(S.doors);
   S.lites_w=+$("r_lw").value||3;S.lites_h=+$("r_lh").value||2;
   const fc=FAMS.find(x=>x.k===S.family);S.clad_look=(fc&&fc.clad)||$("r_clad").dataset.v||"horizontal";
+  if(fc&&fc.base==="tbclad"&&!cladProfById(S.clad_id)) S.clad_id=(cladFor(S)||{}).id||null;
   S.lite_layout=$("r_lites").dataset.v||"auto"; $("laybox").style.display=(fc&&(fc.base==="tb"||fc.base==="tbclad"))?"":"none";
   S.motorized=$("r_drive").dataset.v!=="manual";
   const mdv=$("r_mandoor").dataset.v;
@@ -1194,9 +1292,9 @@ function conceptSpec(){
     situations:sitSpec().length?sitSpec():undefined,
     arch:fam.base==="carriage"&&S.glass!=="none"?(S.arch||"opening"):undefined,
     notes:["Family: "+fam.n].concat(sitNotes()).concat(S.mandoor?["Man door: #"+S.mandoor.door+", hinges "+(S.mandoor.hinge==="R"?"right":"left")+" — "+hwFinBy(S.hw_finish).n+", "+(S.hw_set==="rndknob"?"oval knob":"lever")+" with "+(S.hw_set==="sqlever"?"2-3/8in square":"2-3/8in round")+" escutcheon, 2-3/4in backset to centreline, lever 38in and deadbolt 42in off the bottom, astragal 1-1/2in at strike"]:[]).concat(fam.tb==="flush"?["FLUSH with the house face — beveled trim, coplanar with facade"]:[])
-      .concat(isClad?["Cladding: "+S.clad_look+(S.clad_look!=="metal"?" — "+finBy(S.clad_fin).n:"")]:[]),
+      .concat(isClad?["Cladding: "+((cladFor(S)||{}).name||S.clad_look)+(cladFor(S)&&!/sheet|louvre/.test((cladFor(S).profile||{}).type)?(cladOrient(cladFor(S),S)==="V"?", boards vertical":", boards horizontal"):"")+(battenOf(cladFor(S),S)?" · battens "+frac8(battenOf(cladFor(S),S).w)+" × "+frac8(battenOf(cladFor(S),S).t)+", "+frac8(battenOf(cladFor(S),S).gap)+" between":"")+(S.clad_look!=="metal"?" — "+finBy(S.clad_fin).n:"")]:[]),
   };
-  if(isClad){spec.cladding="tr";spec.clad={material:(S.clad_look==="metal"?"Decorative metal":finBy(S.clad_fin).n+" "+S.clad_look),pattern:S.clad_look,proud:1,oal:3.5,weight:0,spec_file:false};}
+  if(isClad){ const cp=cladFor(S); spec.cladding="tr"; spec.clad={cladding_id:cp&&!/^book:/.test(cp.id)?cp.id:null,name:cp?cp.name:null,pattern:cp?cladLookOf(cp,S):S.clad_look,orient:cp?cladOrient(cp,S):undefined,batten:battenOf(cp,S)||undefined}; }
   return spec;
 }
 async function saveConcept(){
