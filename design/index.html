@@ -259,8 +259,8 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
   </div>
   <div id="viz" style="margin-top:8px"></div>
   <div id="viz3d" style="display:none;margin-top:8px">
-    <div class="mvwrap"><model-viewer id="mv" alt="" camera-controls interaction-prompt="none" shadow-intensity="1.3" shadow-softness="0.8" exposure="0.85" environment-image="neutral" tone-mapping="neutral" camera-orbit="20deg 76deg 112%" min-camera-orbit="auto 15deg auto" max-camera-orbit="auto 92deg auto" field-of-view="30deg" animation-name="Fold" pause></model-viewer></div>
-    <div class="mvctl"><button class="seg" id="mvplay" onclick="mvPlay()">Open</button><input type="range" id="mvfold" min="0" max="100" value="0" oninput="mvFold(+this.value)"><span id="mvpct">0%</span><span class="sp"></span><span id="mvchips"></span><label class="seg" style="cursor:pointer">⇪ .glb<input type="file" id="mvfile" accept=".glb" style="display:none" onchange="mvLocal(this.files[0])"></label></div>
+    <div class="mvwrap"><div id="mv" style="width:100%;height:100%"></div></div>
+    <div class="mvctl"><button class="seg" id="mvplay" onclick="mvPlay()">Open</button><input type="range" id="mvfold" min="0" max="100" value="0" oninput="mvFold(+this.value)"><span id="mvpct">0%</span><span class="sp"></span><span id="mvchips"></span></div>
   </div>
 </div>
 
@@ -273,6 +273,7 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
 </main>
 
 <script src="https://verify.bifolded.com/engine/tr-door-engine-1.0.js"></script>
+<script src="https://verify.bifolded.com/engine/tr-3d-engine-2.0.js"></script>
 <script>
 ENGINE.theme=ENGINE.themes.web;
 
@@ -649,35 +650,25 @@ function liveSoon(e){ const t=e.target; if(!t||!t.closest) return; const st=t.cl
   clearTimeout(LIVE_T); LIVE_T=setTimeout(liveRefresh, e.type==="input"&&t.tagName==="INPUT"?120:0); }
 document.addEventListener("input",liveSoon); document.addEventListener("change",liveSoon);
 window.setMode=setMode;window.stepShow=stepShow;window.stepGo=stepGo;
-/* ===================== 3D (2.3) — the real geometry, the real wood ===================== */
-const MV_BASE="https://verify.bifolded.com/", MV_SRC="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js";
-const MV={loaded:false,glb:null,dur:2,playing:false,dir:1,variants:[]};
-function mvLoadLib(){ if(MV.loaded||document.querySelector('script[src="'+MV_SRC+'"]')) return; const sc=document.createElement("script"); sc.type="module"; sc.src=MV_SRC; sc.onerror=()=>mvChips("⚑ model-viewer did not load"); document.head.appendChild(sc); MV.loaded=true; }
-function mvFrame(){ const mv=$("mv"); try{ mv.play({repetitions:1}); mv.pause(); }catch(e){} }
-function mvFold(p){ const mv=$("mv"); $("mvfold").value=p; $("mvpct").textContent=Math.round(p)+"%"; try{ mv.currentTime=(p/100)*MV.dur; mvFrame(); }catch(e){} }
-function mvTick(){ if(!MV.playing) return; let p=+$("mvfold").value+MV.dir*1.7; if(p>=100){p=100;MV.playing=false;$("mvplay").textContent="Close";MV.dir=-1;} if(p<=0){p=0;MV.playing=false;$("mvplay").textContent="Open";MV.dir=1;} mvFold(p); requestAnimationFrame(mvTick); }
+/* ===================== 3D — TR 3D Engine 2.0 (verify.bifolded.com/engine/tr-3d-engine-2.0.js) =====================
+   The opening as picked — size, doors, split, lites, cladding profile and direction, battens, finish — built from the same parts
+   the shop's model is built from (leafParts in tr-door-engine) and the same engine TR 2.0 Concept shows. Nothing is drawn here. */
+const MV={playing:false,dir:1};
+function mvFold(p){ $("mvfold").value=p; $("mvpct").textContent=Math.round(p)+"%"; if(window.TR3D) TR3D.fold(p/100); }
+function mvTick(){ if(!MV.playing) return; let p=+$("mvfold").value+MV.dir*1.2; if(p>=100){p=100;MV.playing=false;$("mvplay").textContent="Close";MV.dir=-1;} if(p<=0){p=0;MV.playing=false;$("mvplay").textContent="Open";MV.dir=1;} mvFold(p); requestAnimationFrame(mvTick); }
 function mvPlay(){ if(MV.playing){ MV.playing=false; $("mvplay").textContent=MV.dir>0?"Open":"Close"; return; } MV.dir=(+$("mvfold").value>=99)?-1:1; MV.playing=true; $("mvplay").textContent="Stop"; requestAnimationFrame(mvTick); }
 function mvChips(extra){
-  const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const fo=finBy(S.finish_out);
-  const chips=[fo.n, "16′ × 8′ · 3L / 3R geometry"];
-  if(fam.base==="tbclad"){ const cp=cladFor(S); if(cp&&cladGlb(cp,S)){ chips.push(cp.name+(!/sheet|louvre/.test((cp.profile||{}).type)?(cladOrient(cp,S)==="V"?" · vertical":" · horizontal"):"")); if(!battenStd(cp,S)){ const b=battenOf(cp,S), g=cp.profile; const d=battenOf(cp,{batten:null}); chips.push("⚑ 3D shows "+frac8(d.w)+" × "+frac8(d.t)+" battens, "+frac8(d.gap)+" between — yours: "+frac8(b.w)+" × "+frac8(b.t)+", "+frac8(b.gap)+" between"); } } else if(cp&&cp.profile&&cp.profile.type!=="sheet") chips.push("⚑ 3D shows the nearest profile"); }
-  else if(fam.near||!fam.glb) chips.push("⚑ nearest geometry · "+(fam.glb||"fam_rs_band").replace("fam_",""));
-  if(MV.variants.length&&!MV.variants.includes("fin_"+S.finish_out)) chips.push("⚑ no 3D swatch for "+fo.n+" yet");
+  const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const fo=finBy(S.finish_out); const chips=[fo.n];
+  if(fam.base==="tbclad"){ const cp=cladFor(S); if(cp&&cp.name) chips.push(cp.name+(!/sheet|louvre/.test((cp.profile||{}).type)?(cladOrient(cp,S)==="V"?" · vertical":" · horizontal"):"")); }
   if(extra) chips.push(extra);
   $("mvchips").innerHTML=chips.map(c=>'<span class="mvchip'+(c.startsWith("⚑")?" warn":"")+'">'+esc(c)+'</span>').join("");
 }
-function mvApply(){ const mv=$("mv"); const v="fin_"+S.finish_out; try{ mv.variantName=v; }catch(e){} mvChips(); }
 function mvShow(){
-  mvLoadLib(); const mv=$("mv"); const fam=FAMS.find(f=>f.k===S.family)||FAMS[0]; const glb=(fam.base==="tbclad"&&cladGlb(cladFor(S),S))||(fam.glb||"fam_rs_band");
-  if(!mv.dataset.wired){ mv.dataset.wired="1";
-    mv.addEventListener("load",()=>{ const a=mv.availableAnimations||[]; if(a.length) mv.animationName=a[0]; mvFrame(); MV.dur=mv.duration||2; MV.variants=mv.availableVariants||[]; mvFold(+$("mvfold").value); mvApply(); });
-    mv.addEventListener("error",()=>mvChips("⚑ geometry did not load — "+glb));
-  }
-  if(MV.glb!==glb){ MV.glb=glb; MV.playing=false; $("mvplay").textContent="Open"; $("mvfold").value=0; $("mvpct").textContent="0%"; MV.variants=[]; mv.src=MV_BASE+glb+".glb"; }
-  mvApply();
+  if(!window.TR3D){ mvChips("⚑ 3D did not load"); return; }
+  const fam=FAMS.find(f=>f.k===S.family)||FAMS[0];
+  TR3D.mount($("mv")).show(S,fam,finBy(S.finish_out),finBy(S.finish_in||S.finish_out)); TR3D.fold(+$("mvfold").value/100); mvChips();
 }
-function mvLocal(file){ if(!file) return; const mv=$("mv"); mvLoadLib(); MV.glb="local:"+file.name; MV.playing=false; $("mvplay").textContent="Open"; $("mvfold").value=0; $("mvpct").textContent="0%"; MV.variants=[]; mv.src=URL.createObjectURL(file); mvChips("local · "+file.name); }
-window.mvPlay=mvPlay;window.mvFold=mvFold;window.mvLocal=mvLocal;
+window.mvPlay=mvPlay;window.mvFold=mvFold;
 function draw(){
   S.width_in=+$("r_w").value||192;S.height_in=+$("r_h").value||96;
   S.doors=+$("r_doors").dataset.v||4;S.split=$("r_split").dataset.v||balanced(S.doors);
@@ -713,7 +704,7 @@ function draw(){
   const gOn=$("litebox").style.display!=="none"&&S.glass!=="none"&&S.glass!=="full";
   $("gridbox").style.display=gOn?"flex":"none";
   $("barbox").style.display=(gOn||(pOn&&ps==="xcross"))?"flex":"none";
-  $("viz").innerHTML=renderDoorViz(S);
+  $("viz").innerHTML=renderDoorViz(S); if($("viz3d").style.display!=="none"){ clearTimeout(MV.t); MV.t=setTimeout(mvShow,160); }
   if($("w_ft")){ $("w_ft").textContent=ftin(S.width_in); $("h_ft").textContent=ftin(S.height_in); }
   document.querySelectorAll("#grpGlass,#grpPanel,#grpMan").forEach(g=>g.classList.toggle("empty",![...g.querySelectorAll(".f")].some(f=>f.style.display!=="none")));
   $("bmsg").textContent=(S.width_in>480||S.height_in>168)?"⚑ Boundary build — beyond the standard 40′ × 14′ envelope. We never say no: it saves, and the numbers get engineered.":"";
