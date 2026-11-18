@@ -505,7 +505,7 @@ function lookCards(){
     position:'<div class="crop">'+tileSvg({fold:2/3})+'</div>',
     cladding:'<div class="crop lower">'+tileSvg({glass:"none"})+'</div>'
   };
-  const sub={finish:fo.n,glass:S.glass==="none"?"none":(S.glass==="full"?"full lite":S.lites_w+" × "+S.lites_h)+((FAMS.find(f=>f.k===S.family)||{}).base==="carriage"?" · arch "+(S.arch||"opening"):""),hardware:S.mandoor?hwFinBy(S.hw_finish).n+" · "+(HWSETS.find(h=>h.v===S.hw_set)||{}).t:"no man door",panel:((FAMS.find(f=>f.k===S.family)||{}).base||"").startsWith("tb")?((CONSTR.find(c=>c.v===(S.construction||"seamless"))||{}).t):((PANELS.find(p=>p.v===S.panel_style)||{}).t||"family default"),position:[[0,"closed"],[1/3,"a third open"],[2/3,"two thirds open"],[1,"open"]].find(p=>p[0]===(+S.fold||0))[1]};
+  const sub={finish:fo.n,glass:S.glass==="none"?"none":(S.glass==="full"?"full lite":S.lites_w+" × "+S.lites_h)+((FAMS.find(f=>f.k===S.family)||{}).base==="carriage"?" · arch "+(S.arch||"opening"):""),hardware:hwFinBy(S.hw_finish).n+(S.mandoor?" · "+(HWSETS.find(h=>h.v===S.hw_set)||{}).t:""),panel:((FAMS.find(f=>f.k===S.family)||{}).base||"").startsWith("tb")?((CONSTR.find(c=>c.v===(S.construction||"seamless"))||{}).t):((PANELS.find(p=>p.v===S.panel_style)||{}).t||"family default"),position:[[0,"closed"],[1/3,"a third open"],[2/3,"two thirds open"],[1,"open"]].find(p=>p[0]===(+S.fold||0))[1]};
   const famB=(FAMS.find(f=>f.k===S.family)||{}).base; if(famB==="tb"||famB==="tbclad"){ const ll=(LITE_LAYOUTS.find(l=>l.v===S.lite_layout)||{}).t; sub.glass=ll||((FAMS.find(f=>f.k===S.family)||{}).clad==="windowed"?"One lite · top":"none"); }
   const isClad=famB==="tbclad"; sub.cladding=isClad?(((cladFor(S)||{}).name||"")+(cladFor(S)&&!/sheet|louvre/.test((cladFor(S).profile||{}).type)?(cladOrient(cladFor(S),S)==="V"?" · vertical":" · horizontal"):"")+(battenOf(cladFor(S),S)?" · "+frac8(battenOf(cladFor(S),S).w)+"″ battens":"")):""; if(!isClad&&LOOK==="cladding") LOOK="finish";
   el.innerHTML=LOOKS.filter(l=>l.k!=="cladding"||isClad).map(l=>'<div class="lk'+(LOOK===l.k?" on":"")+'" onclick="lookPick(\''+l.k+'\')"><div class="ph">'+bg[l.k]+'</div><div class="rn">'+l.n+'</div><div class="go">'+esc(sub[l.k])+'</div></div>').join("");
@@ -551,6 +551,7 @@ function lookOpts(){
     tiles=[{svg:tileSvg({}),n:"No man door",sub:"",on:!S.mandoor,go:()=>setS({mandoor:"none"})}].concat(
       Array.from({length:S.doors},(_,i)=>({svg:tileSvg({mandoor:{door:i+1,hinge:"L"}}),n:"Man door · leaf "+(i+1),sub:"",on:md===i+1,go:()=>setS({mandoor:String(i+1)})})));
     if(S.mandoor){ for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) for(const st of HWSETS.filter(h=>isOn("hwset",h.v))) tiles.push({svg:hwSvg(f.v,st.v),n:f.t,sub:st.t,on:S.hw_finish===f.v&&S.hw_set===st.v,go:()=>setS({hw_finish:f.v,hw_set:st.v})}); }
+    else { for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) tiles.push({svg:hingeSvg(f.v),n:f.t,sub:"",on:S.hw_finish===f.v,go:()=>setS({hw_finish:f.v})}); }   /* 17 Nov: the finish is a pick on every unit - hinges, pivots and the exposed hardware carry it */
   } else if(LOOK==="cladding"){
     // every profile the shop makes, drawn on THEIR door, with its section beside the name
     const cur=cladFor(S);
@@ -680,7 +681,7 @@ function draw(){
   const mdv=$("r_mandoor").dataset.v;
   S.mandoor=(mdv&&mdv!=="none")?{door:+mdv,hinge:$("r_mdhinge").dataset.v||"L"}:null;
   $("mdhingebox").style.display=S.mandoor?"":"none";
-  $("hwfinbox").style.display=S.mandoor?"":"none";
+  $("hwfinbox").style.display="";
   $("hwsetbox").style.display=S.mandoor?"":"none";
   S.hw_finish=$("r_hwfin").dataset.v||"nickel";
   S.hw_set=$("r_hwset").dataset.v||"sqlever";
@@ -709,6 +710,12 @@ function draw(){
   document.querySelectorAll("#grpGlass,#grpPanel,#grpMan").forEach(g=>g.classList.toggle("empty",![...g.querySelectorAll(".f")].some(f=>f.style.display!=="none")));
   $("bmsg").textContent=(S.width_in>480||S.height_in>168)?"⚑ Boundary build — beyond the standard 40′ × 14′ envelope. We never say no: it saves, and the numbers get engineered.":"";
 }
+function hingeSvg(fk){ const HF=hwFinBy(fk), id="hg"+Math.random().toString(36).slice(2,8), sc=(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="3.2" fill="'+HF.solid+'" stroke="'+HF.dark+'" stroke-width="0.8"/><circle cx="'+x+'" cy="'+y+'" r="1" fill="'+HF.pin+'"/>';
+  return '<svg viewBox="0 0 200 170"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="'+HF.g[0]+'"/><stop offset="0.4" stop-color="'+HF.g[1]+'"/><stop offset="0.75" stop-color="'+HF.g[2]+'"/><stop offset="1" stop-color="'+HF.g[3]+'"/></linearGradient></defs>'
+    +'<rect width="200" height="170" fill="#f0ede3"/><line x1="100" y1="0" x2="100" y2="170" stroke="#d6d0c6" stroke-width="1.5"/>'
+    +'<rect x="62" y="40" width="34" height="90" rx="2" fill="url(#'+id+')" stroke="'+HF.dark+'" stroke-width="1"/><rect x="104" y="40" width="34" height="90" rx="2" fill="url(#'+id+')" stroke="'+HF.dark+'" stroke-width="1"/>'
+    +[0,1,2,3,4].map(i=>'<rect x="94" y="'+(36+i*19.6)+'" width="12" height="18.6" rx="3" fill="'+(i%2?HF.solid:"url(#"+id+")")+'" stroke="'+HF.dark+'" stroke-width="0.8"/>').join("")
+    +[52,85,118].map(y=>sc(74,y)+sc(86,y+0)+sc(114,y)+sc(126,y)).join("")+'</svg>'; }
 /* 7 Nov — the office spec shape (TR 2.0 Concept reads it): what the enquiry carries so the concept opens in the Concept Renderer */
 function conceptSpec(){
   const fo=finBy(S.finish_out),fi=finBy(S.finish_in);
@@ -722,6 +729,7 @@ function conceptSpec(){
     bar_w_in:S.bar_w!==1.5?S.bar_w:undefined,
     lite_type:(["divided","awning"].includes(S.glass))?(S.grid==="tdl"?"TDL":"SDL"):undefined,
     glass_h_in:S.glass_h>0?S.glass_h:undefined,
+    hw_finish:S.hw_finish,
     hardware:S.mandoor?{backset_in:HW_BACKSET,lever_cl_in:HW_LEVER_H,deadbolt_cl_in:HW_DEADBOLT_H,
       escutcheon_in:HW_ESC,escutcheon:(S.hw_set==="sqlever"?"square":"round"),
       trim:(S.hw_set==="rndknob"?"oval knob":"lever"),finish:hwFinBy(S.hw_finish).n}:undefined,
