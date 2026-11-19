@@ -549,7 +549,7 @@ function lookOpts(){
   } else if(LOOK==="hardware"){
     const md=S.mandoor?S.mandoor.door:0;
     tiles=[{svg:tileSvg({}),n:"No man door",sub:"",on:!S.mandoor,go:()=>setS({mandoor:"none"})}].concat(
-      Array.from({length:S.doors},(_,i)=>({svg:tileSvg({mandoor:{door:i+1,hinge:"L"}}),n:"Man door · leaf "+(i+1),sub:"",on:md===i+1,go:()=>setS({mandoor:String(i+1)})})));
+      looseLeaves(S.split).map(d=>({svg:tileSvg({mandoor:{door:d,hinge:mdSide(d)}}),n:"Man door · leaf "+d,sub:"",on:md===d,go:()=>setS({mandoor:String(d)})})));
     if(S.mandoor){ for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) for(const st of HWSETS.filter(h=>isOn("hwset",h.v))) tiles.push({svg:hwSvg(f.v,st.v),n:f.t,sub:st.t,on:S.hw_finish===f.v&&S.hw_set===st.v,go:()=>setS({hw_finish:f.v,hw_set:st.v})}); }
     else { for(const f of HWFINS.filter(h=>isOn("hwfin",h.v))) tiles.push({svg:hingeSvg(f.v),n:f.t,sub:"",on:S.hw_finish===f.v,go:()=>setS({hw_finish:f.v})}); }   /* 17 Nov: the finish is a pick on every unit - hinges, pivots and the exposed hardware carry it */
   } else if(LOOK==="cladding"){
@@ -579,12 +579,12 @@ function driveCards(){
   const md=S.mandoor?S.mandoor.door:0;
   el.innerHTML='<div class="lookcards" style="grid-template-columns:repeat(2,1fr)">'
     +'<div class="lk"><div class="ph"><div class="hwrow" style="gap:0">'+driveSvg(true)+driveSvg(false)+'</div></div><div class="rn">Drive</div><div class="go">'+(S.motorized?"AUTOMATED":"MANUAL")+'</div></div>'
-    +'<div class="lk"><div class="ph crop">'+tileSvg({mandoor:S.mandoor||{door:Math.min(2,S.doors),hinge:"L"}})+'</div><div class="rn">Man door</div><div class="go">'+(S.mandoor?"LEAF "+md:"NONE")+'</div></div></div>'
+    +'<div class="lk"><div class="ph crop">'+tileSvg({mandoor:S.mandoor||(looseLeaves(S.split)[0]?{door:looseLeaves(S.split)[0],hinge:mdSide(looseLeaves(S.split)[0])}:null)})+'</div><div class="rn">Man door</div><div class="go">'+(S.mandoor?"LEAF "+md:"NONE")+'</div></div></div>'
     +'<div class="tiles" style="margin-bottom:22px">'
-    +'<div class="tile'+(S.motorized?" on":"")+'" onclick="setDrive(true)"><div class="ph">'+driveSvg(true)+'</div><div class="tn">Automated</div></div>'
+    +'<div class="tile'+(S.motorized?" on":"")+'"'+(S.auto_ok===false?' style="opacity:.32;pointer-events:none"':' onclick="setDrive(true)"')+'><div class="ph">'+driveSvg(true)+'</div><div class="tn">Automated</div></div>'
     +'<div class="tile'+(!S.motorized?" on":"")+'" onclick="setDrive(false)"><div class="ph">'+driveSvg(false)+'</div><div class="tn">Manual</div></div>'
     +'<div class="tile'+(!S.mandoor?" on":"")+'" onclick="setS({mandoor:\'none\'});driveCards()"><div class="ph">'+tileSvg({mandoor:null})+'</div><div class="tn">No man door</div></div>'
-    +Array.from({length:S.doors},(_,i)=>'<div class="tile'+(md===i+1?" on":"")+'" onclick="setS({mandoor:\''+(i+1)+'\'});driveCards()"><div class="ph">'+tileSvg({mandoor:{door:i+1,hinge:"L"}})+'</div><div class="tn">Man door · leaf '+(i+1)+'</div></div>').join("")
+    +looseLeaves(S.split).map(d=>'<div class="tile'+(md===d?" on":"")+'" onclick="setS({mandoor:\''+d+'\'});driveCards()"><div class="ph">'+tileSvg({mandoor:{door:d,hinge:mdSide(d)}})+'</div><div class="tn">Man door · leaf '+d+'</div></div>').join("")
     +'</div>';
 }
 function setDrive(auto){ $("r_drive").value=auto?"motor":"manual"; $("r_drive").dataset.v=auto?"motor":"manual"; S.motorized=auto; draw(); driveCards(); }
@@ -677,8 +677,12 @@ function draw(){
   const fc=FAMS.find(x=>x.k===S.family);S.clad_look=(fc&&fc.clad)||$("r_clad").dataset.v||"horizontal";
   if(fc&&fc.base==="tbclad"&&!cladProfById(S.clad_id)) S.clad_id=(cladFor(S)||{}).id||null;
   S.lite_layout=$("r_lites").dataset.v||"auto"; $("laybox").style.display=(fc&&(fc.base==="tb"||fc.base==="tbclad"))?"":"none";
-  S.motorized=$("r_drive").dataset.v!=="manual";
+  { const el=$("r_mandoor"), want=mdOpts(S.doors,S.split), cur=el.dataset.v; if([...el.options].map(o=>o.value).join(",")!==want.map(o=>o.v).join(",")) sel("r_mandoor",want,want.some(o=>o.v===cur)?cur:"none",draw); else if(!want.some(o=>o.v===cur)){ el.value="none"; el.dataset.v="none"; } }
   const mdv=$("r_mandoor").dataset.v;
+  S.auto_ok=autoOK(S.split,(mdv&&mdv!=="none")?+mdv:0); S.motorized=$("r_drive").dataset.v!=="manual"&&S.auto_ok;
+  { const o=$("r_drive").querySelector('option[value="motor"]'); if(o) o.disabled=!S.auto_ok; $("r_drive").value=S.motorized?"motor":"manual"; }
+  { const sg=S.split+"|"+mdv+"|"+S.motorized+"|"+S.auto_ok; if(window.__drvSig!==sg){ const first=window.__drvSig===undefined; window.__drvSig=sg; if(!first){ try{ driveCards(); if(typeof LOOK!=="undefined"&&LOOK==="hardware") lookCards(); }catch(e){} } } }
+  if(mdv&&mdv!=="none"){ const sg=mdv+"|"+$("r_split").dataset.v+"|"+$("r_doors").dataset.v; if(window.__mdSig!==sg){ window.__mdSig=sg; const hs=mdSide(+mdv); $("r_mdhinge").value=hs; $("r_mdhinge").dataset.v=hs; } } else window.__mdSig="";
   S.mandoor=(mdv&&mdv!=="none")?{door:+mdv,hinge:$("r_mdhinge").dataset.v||"L"}:null;
   $("mdhingebox").style.display=S.mandoor?"":"none";
   $("hwfinbox").style.display="";
@@ -968,7 +972,12 @@ function sitSpec(){ return Object.keys(S.situations).map(k=>{ const s=SITS.find(
 function sitNotes(){ return sitSpec().map(s=>s.name+(Object.keys(s.fields).length?" — "+Object.entries(s.fields).map(([f,v])=>f+" "+v).join(" · "):"")); }
 window.optToggle=optToggle;window.optNew=optNew;window.toggleOpts=toggleOpts;window.sitToggle=sitToggle;window.sitField=sitField;
 
-function mdOpts(n){return[{v:"none",t:"None"}].concat(Array.from({length:n},(_,i)=>({v:String(i+1),t:"#"+(i+1)})));}
+function mdSide(i){ const sp=String($("r_split").dataset.v||""), m=/^(\d+)L/.exec(sp), nl=m?+m[1]:(/R/.test(sp)?0:(+$("r_doors").dataset.v||1)); return i<=nl?"L":"R"; } // a man door hinges on the side its own stack hangs from
+/* 19 Nov (Ryan): AUTOMATED is 1, 2, 4 or 6 driven doors a side · a MAN DOOR is the loose (odd) leaf of its stack and is never driven */
+function stk(sp){ sp=String(sp||""); const l=/(\d+)L/.exec(sp), r=/(\d+)R/.exec(sp); return [l?+l[1]:0, r?+r[1]:0]; }
+function looseLeaves(sp){ const [L,R]=stk(sp), o=[]; if(L%2) o.push(L); if(R%2) o.push(L+1); return o; }   // the lead-end leaf of an odd stack: door 1 of 1L3R, door 3 of 2L1R / 2L3R / 3L2R
+function autoOK(sp,md){ let [L,R]=stk(sp); const ok=x=>x===0||x===1||x===2||x===4||x===6; if(!ok(L)||!ok(R)) return false; if(md){ if(md<=L) L--; else R--; } return L+R>0; }   // a 3 / 5 / 7 stack is never automated - the loose end leaf cannot be controlled; a single that is the man door is not driven
+function mdOpts(n,sp){ sp=sp||$("r_split").dataset.v||balanced(n); return [{v:"none",t:"None"}].concat(looseLeaves(sp).map(i=>({v:String(i),t:"#"+i}))); }
 sel("r_doors",[1,2,3,4,5,6,7,8].map(x=>({v:x,t:String(x)})),4,(n)=>{sel("r_split",splitsFor(+n),balanced(+n),()=>{draw();famCards();});sel("r_mandoor",mdOpts(+n),"none",draw);draw();famCards();});
 sel("r_split",splitsFor(4),"2L2R",draw);
 sel("r_glass",GLASSES,"divided",draw);
