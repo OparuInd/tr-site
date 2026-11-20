@@ -667,7 +667,7 @@ function mvChips(extra){
 function mvShow(){
   if(!window.TR3D){ mvChips("⚑ 3D did not load"); return; }
   const fam=FAMS.find(f=>f.k===S.family)||FAMS[0];
-  TR3D.mount($("mv")).show(S,fam,finBy(S.finish_out),finBy(S.finish_in||S.finish_out)); TR3D.fold(+$("mvfold").value/100); mvChips();
+  TR3D.mount($("mv"),{panelLabel:"Set the scene"}).show(S,fam,finBy(S.finish_out),finBy(S.finish_in||S.finish_out)); TR3D.fold(+$("mvfold").value/100); mvChips();
 }
 window.mvPlay=mvPlay;window.mvFold=mvFold;
 function draw(){
