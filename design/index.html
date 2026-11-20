@@ -140,7 +140,7 @@ button{border-radius:0;background:var(--sec);color:var(--fg);border:1px solid va
 #cardFinish h2{font-size:14px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:500;margin:10px 0}
 #viztitle{font-size:14px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:500}
 #viz svg{border:1px solid var(--bd)}
-.mvwrap{border-radius:0;border:1px solid var(--bd)}.mvctl #mvpct{color:var(--mfg)}.mvchip{background:var(--card);border-color:var(--bd);color:var(--fg);border-radius:0;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
+.mvwrap{border-radius:0;border:1px solid var(--bd)}.mvrow{display:flex;gap:18px;align-items:flex-start}.mvrow .mvwrap{flex:1 1 0;min-width:0;max-width:884px}#mvside{flex:0 0 290px;display:none}@media(min-width:1180px){#mvside{display:block}}.mvctl #mvpct{color:var(--mfg)}.mvchip{background:var(--card);border-color:var(--bd);color:var(--fg);border-radius:0;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
 .sit{background:var(--card);border:1px solid var(--bd);border-radius:0;color:var(--fg);font-family:var(--mono);font-size:11.5px;letter-spacing:.06em}.sit.on{background:#2a2419;border-color:var(--acc)}
 .sitmenus select{background:var(--bg)}
 .optrow,.optsec{display:none}
@@ -259,7 +259,7 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
   </div>
   <div id="viz" style="margin-top:8px"></div>
   <div id="viz3d" style="display:none;margin-top:8px">
-    <div class="mvwrap"><div id="mv" style="width:100%;height:100%"></div></div>
+    <div class="mvrow"><div class="mvwrap"><div id="mv" style="width:100%;height:100%"></div></div><div id="mvside"></div></div>
     <div class="mvctl"><button class="seg" id="mvplay" onclick="mvPlay()">Open</button><input type="range" id="mvfold" min="0" max="100" value="0" oninput="mvFold(+this.value)"><span id="mvpct">0%</span><span class="sp"></span><span id="mvchips"></span></div>
   </div>
 </div>
@@ -452,11 +452,13 @@ function setMode(m){
 }
 /* ---- RANGE: large real-skin renders, four across ---- */
 const PLATES={clad_h:"assets/34073b219_generated_image.jpg",clad_v:"assets/2a0178c99_generated_image.jpg",clad_metal:"assets/201e616ef_generated_image.jpg",fullview:"assets/478e837c1_generated_image.jpg",glass_panel:"assets/8be37606a_generated_5c0560f4.jpg",hardwood_2x2:"assets/107ea9224_generated_image.jpg",clad_louvre:"assets/a95abeabf_generated_1497a1fe.jpg"};   // the site's own collection plates (assets/); a family without one shows its elevation until its render exists
+const RANGE3D=new Set(["carriage_arc", "carriage_arc_door", "carriage_solid", "clad_h", "clad_h_slim", "clad_h_squares", "clad_metal", "clad_metal_tall", "clad_v", "clad_v_offset", "clad_v_squares", "clad_v_trapezoid", "flush_paint", "flush_paint_squares", "flush_trim", "fullview", "fullview_clear", "fullview_two", "glass_panel", "louvre", "rs_2x2", "rs_2x3", "rs_3x1", "rs_3x2", "rs_4row", "rs_4x1_plank", "rs_awning", "rs_clear", "rs_xcross", "seamless_long", "seamless_offset", "seamless_slim", "seamless_tall", "seamless_trapezoid", "slab", "slab_both", "slab_long", "slab_offset", "slab_patina", "slab_single", "slab_slim", "slab_squares", "slab_tall", "slab_trap_door", "slab_trapezoid"]);
 function rangeCards(){
   const el=$("range"); if(!el) return;
   el.innerHTML=DESIGNS.filter(d=>isOn("designs",d.k)&&isOn("fams",famFor(d,d.rep||S.finish_out,d.c||S.construction))).map(d=>{ const f=Object.assign({},FAMS.find(x=>x.k===famFor(d,d.rep||S.finish_out,d.c||S.construction))||FAMS[0],{k:d.k,n:d.n}); const g=f.sig||{};
     const svg=renderDoorViz(designS(d,d.rep||S.finish_out,d.c||S.construction),{mini:true});
-    const pic=PLATES[d.k]?'<div class="ph" style="background-image:url(\''+PLATES[d.k]+'\')"></div>':'<div class="ph el">'+svg+'</div>';
+    const plate=RANGE3D.has(d.k)?'range/'+d.k+'.jpg':PLATES[d.k];   // 20 Nov: the card is the door's own 3D render (range/<design>.jpg, shot from TR 3D Engine 2.0); a design without one falls back to its plate, then its elevation
+    const pic=plate?'<div class="ph" style="background-image:url(\''+plate+'\')"></div>':'<div class="ph el">'+svg+'</div>';
     return '<div class="rng'+(S.design===d.k?" on":"")+'" onclick="rangePick(\''+d.k+'\')">'+pic+'<div class="rn">'+esc(f.n)+'</div><div class="go">DESIGN THIS DOOR →</div></div>'; }).join("");
 }
 function rangePick(k){ pickDesign(k); rangeCards(); stepShow(2); }
@@ -667,7 +669,7 @@ function mvChips(extra){
 function mvShow(){
   if(!window.TR3D){ mvChips("⚑ 3D did not load"); return; }
   const fam=FAMS.find(f=>f.k===S.family)||FAMS[0];
-  TR3D.mount($("mv"),{panelLabel:"Set the scene"}).show(S,fam,finBy(S.finish_out),finBy(S.finish_in||S.finish_out)); TR3D.fold(+$("mvfold").value/100); mvChips();
+  TR3D.mount($("mv"),{panelLabel:"Set the scene",panelHost:$("mvside")}).show(S,fam,finBy(S.finish_out),finBy(S.finish_in||S.finish_out)); TR3D.fold(+$("mvfold").value/100); mvChips();
 }
 window.mvPlay=mvPlay;window.mvFold=mvFold;
 function draw(){
