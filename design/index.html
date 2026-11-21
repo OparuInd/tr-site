@@ -1179,6 +1179,7 @@ stageSync(); if(STEP===2) cfgCards(); if(STEP===4){ driveCards(); lookCards(); }
 #fmd text{font-family:var(--mono,monospace);font-size:11px;fill:#bbb;text-anchor:middle;pointer-events:none}
 #fmd g.on text{fill:#1a1a1a}
 #step7 #p5{margin-bottom:18px}
+.t24{display:flex;gap:8px}.t24 button{font-family:var(--mono,monospace);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;background:transparent;color:inherit;border:1px solid var(--line,#3a3631);cursor:pointer}.t24 button.on{border-color:var(--gold,#c8a96a);color:var(--gold,#c8a96a)}
 #step4 #p3{display:none!important}
 #cardFinish .sw{row-gap:24px}#cardFinish .swrow{margin-bottom:30px}
 .fsec .tiles{gap:8px!important}
@@ -1187,6 +1188,20 @@ stageSync(); if(STEP===2) cfgCards(); if(STEP===4){ driveCards(); lookCards(); }
 @media(max-width:999px){.fsec .tiles{grid-template-columns:repeat(3,1fr)!important}#fcfg .cfg{width:calc(33vw - 30px)!important}}
 body.f5 #snext{visibility:hidden}
 #step5 h2,#step5 .lead{display:none}
+
+/* the Send screen: the door as picked, every pick listed, then the form */
+#fsum{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start;margin:0 0 22px}
+#fsum .pv{background:#141312;border:1px solid var(--line,#3a3631);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#fsum .pv img,#fsum .pv svg{width:100%;height:100%;object-fit:cover;display:block}
+#fsum .pv svg{object-fit:contain;padding:14px;box-sizing:border-box}
+#fsum dl{margin:0;display:grid;grid-template-columns:auto 1fr auto;column-gap:14px}
+#fsum dt,#fsum dd,#fsum .ed{padding:7px 0;border-top:1px solid var(--line,#3a3631);margin:0;font-size:13px}
+#fsum dt{font-family:var(--mono,monospace);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#9a948a);padding-top:9px;white-space:nowrap}
+#fsum .ed{font-family:var(--mono,monospace);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold,#c8a96a);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;text-align:right}
+#fsum .hd{grid-column:1/-1;font-family:var(--mono,monospace);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold,#c8a96a);padding:14px 0 6px}
+#fsum .hd:first-child{padding-top:0}
+@media(max-width:899px){#fsum{grid-template-columns:1fr}}
+@media(max-width:699px){#step7 .send{max-width:100%}#step7 .send .f{min-width:0}#step7 .send input,#step7 .send textarea,#step7 .send .go{width:100%;max-width:100%;box-sizing:border-box}}
 </style>
 <script id="flow4js">
 (function(){
@@ -1200,7 +1215,7 @@ function setup(){
   s3.querySelector(".eyebrow").textContent="SIZE & DETAILS"; s4.querySelector(".eyebrow").textContent="COLOR & HARDWARE"; $("step5").querySelector(".eyebrow").textContent="SET THE SCENE";
   mk(s3,"fcfg","Fold"); $("fcfg").querySelector(".fb").appendChild($("cfgs"));
   mk(s3,"fmd","Entry door"); $("fmd").appendChild($("grpMan"));
-  mk(s3,"fglass","Glass"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding");
+  mk(s3,"ft24","Heated / cooled garage"); mk(s3,"fglass","Glass"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding");
   mk(s4,"fhw","Hardware");
   $("step7").insertBefore($("p5"),$("step7").querySelector("#p6"));
 }
@@ -1219,6 +1234,11 @@ function sect(k,id,skip){
   const on=tiles.find(x=>x.t.classList.contains("on")); { const tn=on&&on.t.querySelector(".tn"), sp=tn&&tn.querySelector("span"); host.querySelector(".fl b").textContent=tn?(sp?tn.textContent.replace(sp.textContent,"").trim()+" · "+sp.textContent.trim():tn.textContent.trim()):""; }
   body.innerHTML=pre+'<div class="tiles">'+tiles.map(x=>{ x.t.setAttribute("onclick","__fgo."+k+"["+x.i+"]()"); return x.t.outerHTML; }).join("")+'</div>'; src.innerHTML="";
 }
+/* a heated or cooled garage is a Title 24 opening: the Centor E3 set, its hardware on the outside face, the deeper head box, jambs and sill. One pick; the 3D draws it. */
+const isT24=()=>/E3/i.test(String(S.track||""));
+function t24Draw(){ const h=$("ft24"); if(!h) return; const on=isT24(); h.querySelector(".fl b").textContent=on?"Yes · Title 24":"No";
+  h.querySelector(".fb").innerHTML='<div class="t24">'+[["No",0],["Yes · Title 24",1]].map(([t,v])=>'<button type="button" class="'+((!!v)===on?"on":"")+'" onclick="flowT24('+v+')">'+t+'</button>').join("")+'</div>'; }
+window.flowT24=function(v){ if(v){ S.track="E3"; S.situations.title24=S.situations.title24||{fields:{}}; } else { delete S.track; delete S.situations.title24; } draw(); t24Draw(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
 function mdDraw(){
   const host=$("fmd"), [L,R]=stk(S.split), n=L+R, ok=looseLeaves(S.split), md=S.mandoor?S.mandoor.door:0;
   host.style.display=ok.length?"":"none"; if(!ok.length) return;
@@ -1232,7 +1252,7 @@ function mdDraw(){
 window.flowMD=function(i){ const m=$("r_mandoor"), v=(S.mandoor&&S.mandoor.door===i)?"none":String(i); if(![...m.options].some(o=>o.value===v)) sel("r_mandoor",mdOpts(S.doors,S.split),v,draw); m.value=v; m.dataset.v=v; draw(); render(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
 let raf=0;
 function render(){ if(raf) return; raf=1; Promise.resolve().then(()=>{ raf=0; try{
-  if(STEP===3){ cfgCards(); mdDraw(); const fam=FAMS.find(f=>f.k===S.family)||{};
+  if(STEP===3){ cfgCards(); mdDraw(); t24Draw(); const fam=FAMS.find(f=>f.k===S.family)||{};
     sect("glass","fglass"); const slab=fam.base==="tb"||fam.base==="tbclad";
     if(slab){ $("fpanel").style.display="none"; } else sect("panel","fpanel");
     if(fam.base==="tbclad") sect("cladding","fclad"); else $("fclad").style.display="none"; }
@@ -1245,11 +1265,48 @@ window.cfgPick=cfgPick=function(n,sp){ $("r_doors").value=String(n); $("r_doors"
 window.lookCards=lookCards=function(){ render(); };
 window.driveCards=driveCards=function(){};
 window.lookPick=lookPick=function(){};
+
+/* ---- SEND: what they picked, shown back as a picture and a list, and sent whole ---- */
+let SHOT="", SCENE=[];
+function grab(){ try{ const E=window.TR3D&&TR3D._E; if(E&&E.r&&$("viz3d")&&$("viz3d").style.display!=="none"&&$("viz3d").offsetParent){ const f=TR3D.folded, cp=E.cam.position.clone(), ct=E.ctl.target.clone(); if(f>0.02) TR3D.fold(0); TR3D.reset(); SHOT=TR3D.shot(960,720); E.cam.position.copy(cp); E.ctl.target.copy(ct); E.ctl.update(); if(f>0.02) TR3D.fold(f); E.dirty=true; }
+    if(window.TR3D&&TR3D.scene){ SCENE=TR3D.scene(); return; }
+    const rows=[...document.querySelectorAll("#mvside label, #viz3d label")].filter(l=>l.querySelector("select")&&l.offsetParent!==null).map(l=>{ const x=l.querySelector("select"); return [l.firstChild.textContent.trim(), x.options[x.selectedIndex]?x.options[x.selectedIndex].textContent.trim():""]; }).filter(r=>r[0]&&r[1]); if(rows.length) SCENE=rows; }catch(e){ console.warn("flow grab",e); } }
+function onLabel(k,skip){ const keep=LOOK, ts=tileSvg; let out=""; LOOK=k; window.tileSvg=tileSvg=()=>"";
+  try{ lookOpts(); const t=[...$("lookopts").querySelectorAll(".tile")].filter(x=>!skip||!skip.test(x.textContent.trim())); const on=t.find(x=>x.classList.contains("on")); if(on&&t.length>1){ const tn=on.querySelector(".tn"), sp=tn&&tn.querySelector("span"); out=tn?(sp?tn.textContent.replace(sp.textContent,"").trim()+" · "+sp.textContent.trim():tn.textContent.trim()):""; } }catch(e){} finally{ window.tileSvg=tileSvg=ts; LOOK=keep; $("lookopts").innerHTML=""; }
+  return out; }
+function picks(){ const fam=FAMS.find(f=>f.k===S.family)||{}, d=S.design&&designBy(S.design), fo=finBy(S.finish_out), fi=finBy(S.finish_in), slab=fam.base==="tb"||fam.base==="tbclad", R=[];
+  R.push(["Door",3,[["Style",(d&&(d.n||d.name))||fam.n||""],["Opening",(ftin(S.width_in)+" wide × "+ftin(S.height_in)+" high").replace(/\s+/g," ")],["Fold",S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1 left, $2 right").replace(/^(\d+)L$/,"$1 left").replace(/^(\d+)R$/,"$1 right")],["Drive",S.motorized?"Automated":"Manual"],
+    ["Entry door",S.mandoor?"Door "+S.mandoor.door+" · hinged "+(S.mandoor.hinge==="R"?"right":"left"):(looseLeaves(S.split).length?"None":"")],["Heated / cooled",isT24()?"Yes · Title 24":"No"],["Glass",onLabel("glass")],["Panel",slab?"":onLabel("panel")],["Cladding",fam.base==="tbclad"?onLabel("cladding"):""]]]);
+  R.push(["Color & hardware",4,[["Outside",fo.n],["Inside",fi.n],["Hardware",onLabel("hardware",/^(no man door|man door)/i)]]]);
+  if(SCENE.length) R.push(["Scene",5,SCENE]);
+  let sn=[]; try{ sn=sitNotes().filter(t=>!/^Title 24/i.test(t)); }catch(e){} if(sn.length) R.push(["Details",7,sn.map((t,i)=>[i?"":"Notes",t])]);
+  return R.map(([h,st,rows])=>[h,st,rows.filter(r=>r[1])]).filter(g=>g[2].length); }
+function sumDraw(){ let host=$("fsum"); if(!host){ host=document.createElement("div"); host.id="fsum"; const s7=$("step7"); s7.insertBefore(host,s7.querySelector(".lead").nextSibling); }
+  let pv=""; if(SHOT) pv='<img alt="" src="'+SHOT+'">'; else { try{ pv=renderDoorViz(S); }catch(e){} }
+  host.innerHTML='<div class="pv">'+pv+'</div><dl>'+picks().map(([h,st,rows])=>'<div class="hd">'+esc(h)+'</div>'+rows.map((r,i)=>'<dt>'+esc(r[0])+'</dt><dd>'+esc(r[1])+'</dd>'+(i===0&&st!==7?'<button type="button" class="ed" onclick="stepShow('+st+')">Change</button>':'<span class="ed"></span>')).join("")).join("")+'</dl>'; }
+window.sendEnquiry=sendEnquiry=async function(){
+  const go=$("q_go"), line=$("q_msgline"), sp=specNow(), P=picks();
+  const name=($("q_name").value||"").trim(), email=($("q_email").value||"").trim(), phone=($("q_phone").value||"").trim();
+  if(name.length<2){ line.textContent="Your name, so we know who to call."; return; }
+  if(!email&&!phone){ line.textContent="An email or a phone number."; return; }
+  go.disabled=true; go.textContent="Sending…";
+  const flat=[]; P.forEach(([h,st,rows])=>{ let last=""; rows.forEach(r=>{ last=r[0]||last; flat.push({group:h,label:last,value:r[1]}); }); });
+  const head=[sp.family, S.doors+" doors · "+S.split, ftin(S.width_in)+" × "+ftin(S.height_in), S.motorized?"automated":"manual", "outside "+sp.finish_out+(sp.finish_in!==sp.finish_out?" · inside "+sp.finish_in:"")].filter(Boolean).join(" · ");
+  const list=P.map(([h,st,rows])=>h.toUpperCase()+"\n"+rows.map(r=>"  "+(r[0]?r[0]+": ":"  ")+r[1]).join("\n")).join("\n");
+  let scene; try{ scene=SCENE.length?Object.fromEntries(SCENE):undefined; }catch(e){}
+  const r=await call({action:"enquiry",name,email,phone,site:$("q_site").value,website:$("q_web").value,
+    interest:sp.family,size:ftin(S.width_in)+" × "+ftin(S.height_in),
+    config:{w:+(S.width_in/12).toFixed(2),h:+(S.height_in/12).toFixed(2),panels:S.doors,frame:sp.family,infill:(sp.glass&&sp.glass!=="none")?"glass "+sp.glass:"solid",automation:S.motorized?"automated":"manual",spec:sp,concept:conceptSpec(),design:S.design||undefined,track:S.track||undefined,hw_finish:S.hw_finish,hw_set:S.mandoor?S.hw_set:undefined,selections:flat,scene},
+    message:"DESIGN YOUR DOOR — "+head+"\n\n"+list+(($("q_msg").value||"").trim()?"\n\nFROM THE CUSTOMER\n"+$("q_msg").value.trim():"")});
+  if(!r.ok){ line.textContent=r.error||"We could not reach the server — please call us."; go.disabled=false; go.textContent="REQUEST A QUOTE"; return; }
+  $("q_go").parentNode.style.display="none"; line.innerHTML='<b>Sent.</b> We will come back to you with a quote and your concept drawing.'+(r.label&&r.label!=="received"?' Your reference: <b>'+esc(r.label)+'</b>':'');
+};
+window.__picks=picks;
 const _show=stepShow;
-window.stepShow=stepShow=function(n){ _show(snap(n)); const N=idx();
+window.stepShow=stepShow=function(n){ if(snap(n)===7&&STEP!==7) grab(); _show(snap(n)); const N=idx();
   $("steps").innerHTML=NAMES.map((nm,i)=>'<button class="'+(i===N?"on":i<N?"done":"")+'" onclick="stepShow('+MAP[i]+')"><b>'+(i+1)+'</b>'+nm+'</button>').join("");
   document.body.classList.toggle("f5",N===4); $("sback").style.visibility=N===0?"hidden":"";
-  if(STEP===7) try{ sitRow(); }catch(e){}
+  if(STEP===7){ try{ sitRow(); }catch(e){} try{ sumDraw(); }catch(e){ console.warn('flow sum',e); } }
   render(); };
 window.stepGo=stepGo=function(d){ const N=Math.max(0,Math.min(4,idx()+d)); stepShow(MAP[N]); };
 window.rangePick=rangePick=function(k){ pickDesign(k); rangeCards(); stepShow(3); };
@@ -1257,6 +1314,7 @@ const _draw=draw; window.draw=draw=function(){ _draw.apply(this,arguments); if(S
 try{ ["man_door","two_tone","windowed_clad","louvre"].forEach(k=>PUBLIC_SITS.delete(k)); }catch(e){}
 const _mvPlay=mvPlay; window.mvPlay=mvPlay=function(){ const E=window.TR3D&&TR3D._E; if(!E||!E.r||$("viz3d").style.display==="none") return _mvPlay();
   const open=+$("mvfold").value<99; MV.playing=false; MV.dir=open?-1:1; $("mvplay").textContent=open?"Close":"Open"; TR3D.animate(open?1:0,1700,f=>{ $("mvfold").value=f*100; $("mvpct").textContent=Math.round(f*100)+"%"; }); };
+{ const _sit=sitRow; window.sitRow=sitRow=function(){ _sit.apply(this,arguments); if(STEP===7&&$('fsum')) try{ sumDraw(); }catch(e){} }; }
 setup(); stepShow(STEP);
 try{ const k=new URLSearchParams(location.search).get("style"); if(k){ const go=()=>{ if(designBy(k)&&STEP===1){ rangePick(k); return true; } }; if(!go()) setTimeout(go,1500); } }catch(e){}
 })();
