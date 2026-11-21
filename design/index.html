@@ -164,11 +164,58 @@ footer{color:var(--mfg);font-family:var(--mono);font-size:11px;letter-spacing:.1
 .tile .tn{padding:9px 11px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg)}.tile .tn span{display:block;color:var(--mfg);font-size:10px;margin-top:2px}
 
 </style>
-<style>html.embed header.nav{display:none!important}</style><script>if(self!==top)document.documentElement.classList.add("embed")</script></head>
+<style>html.embed header.nav{display:none!important}</style><script>if(self!==top)document.documentElement.classList.add("embed")</script><style id="stage3d">
+/* 21 Nov — the live 3D stage: steps 2–5 show the customer's own door in 3D, beside the picks (desktop) or pinned above them (phone) */
+#stagebox{display:none}
+body.staged #stagebox{display:block}
+#stagebox #cardPreview{display:block!important}
+#stagebox #viztitle{display:none}
+#stagebox .mvwrap{max-height:none}
+#cfgBig,#sizeviz{display:none!important}
+.cfgwrap{display:block!important}
+img.t3{display:block;width:100%;height:100%;object-fit:cover;background:#26231f}
+img.t3.wait{background:linear-gradient(100deg,#232120 30%,#2e2b28 50%,#232120 70%);background-size:300% 100%;animation:t3w 1.2s linear infinite}
+@keyframes t3w{from{background-position:100% 0}to{background-position:0 0}}
+#drivecards>.lookcards{display:none}
+.cfg img.t3{aspect-ratio:4/3;height:auto}
+.tile .ph img.t3,.lk .ph img.t3{height:100%}
+body.staged:not(.st5) #stagebox #mvside{display:none!important}
+body.staged.st5 main>#stepnav{grid-column:1/-1}
+@media(min-width:1000px){
+ body.staged main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);column-gap:28px;align-items:start}
+ body.staged main>*{grid-column:1/-1}
+ body.staged main>#stagebox{grid-column:1;grid-row:2/span 40;position:sticky;top:80px}
+ body.staged main>.step{grid-column:2}
+ body.staged.st5 main>#stagebox{grid-column:1/-1;grid-row:auto;position:static}
+ body.staged.st5 main>#step5{grid-row:2;grid-column:1/-1}
+ body.staged main>.step .lookcards{grid-template-columns:repeat(3,1fr);gap:12px}
+ body.staged main>#step4 #drivecards .tiles{grid-template-columns:repeat(2,1fr)}
+ body.staged.st5 main>#stagebox{grid-row:3}
+ body.staged.st5 main>#stepnav{grid-row:4}
+}
+@media(max-width:999px){
+ body.staged #stagebox{position:sticky;top:64px;z-index:30;background:var(--bg,#1a1a1a);margin:0 -24px;padding:0 0 6px;box-shadow:0 10px 18px -12px rgba(0,0,0,.8)}
+ body.staged.st5 #stagebox{position:static;box-shadow:none}
+ body.staged main{display:flex;flex-direction:column}
+ body.staged main>#stepper{order:-2}
+ body.staged.st5 main>#step5{order:-1}
+ #stagebox #cardPreview>div:first-child{padding:6px 10px 4px;gap:6px!important}
+ #stagebox .mvwrap{aspect-ratio:16/10;max-height:40vh;border-left:0;border-right:0}
+ #stagebox .mvctl{padding:0 10px;margin-top:6px}
+ #stagebox .mvctl input[type=range],#stagebox #mvpct,#stagebox #mvchips{display:none}
+ #stagebox #foldseg{display:none!important}
+ #stagebox .seg{padding:6px 10px!important;font-size:11px!important}
+ #stagebox #viz{padding:0 6px}
+ .tiles{grid-template-columns:1fr 1fr!important;gap:10px!important}
+ .cfg{width:calc(50vw - 40px)!important}
+}
+</style>
+</head>
 <body>
 <header class="nav"><div class="in"><a class="mark" href="../"><img src="../img/tr-tile.png" alt="" style="height:32px;width:auto;display:block"><b>TUNGSTEN ROYCE</b></a><nav class="links"><a href="../">HOME</a><a href="../bifold.html">BIFOLD</a><a href="../projects.html">PROJECTS</a><a class="on">BUILD YOUR OPENING</a><a href="../quote.html">QUOTE</a></nav><a class="cta" href="#" onclick="stepShow(7);return false">GET A QUOTE</a></div><span id="modeseg" hidden><button></button><button></button></span></header>
 <main>
 <div class="card" id="stepper" style="padding:8px 12px"><div class="steps" id="steps"></div></div>
+<div id="stagebox"></div>
 <div class="card step" id="step1"><div class="eyebrow">THE COLLECTION</div><h2>Discover the range</h2><p class="lead">Every door is built to your opening. Enter at your leisure.</p><div id="range" class="range"></div><div id="p2"></div></div>
 <div class="card step" id="step2"><div class="eyebrow">CONFIGURATION</div><h2 id="cfgTitle">Configuration</h2><div class="cfgwrap"><div id="cfgBig" class="cfgbig"></div><div id="cfgs" class="cfgs"></div></div></div>
 <div class="card step" id="step3"><div class="eyebrow">YOUR OPENING</div><h2>How big is the opening?</h2><p class="lead">Outside of the frame, in inches. Close is fine — we measure before we build.</p><div id="p1"></div><div id="sizeviz" style="margin-top:14px"></div></div>
@@ -436,7 +483,7 @@ function setMode(m){
     $("p1").appendChild($("grpUnit"));
     $("p2").appendChild($("cardFams")); $("cardFams").querySelector(".fams").style.display="none"; rangeCards();
     $("p3").appendChild($("grpGlass")); $("p3").appendChild($("grpPanel")); $("p3b").appendChild($("cardFinish"));
-    $("p4").appendChild($("cardPreview"));
+    $("stagebox").appendChild($("cardPreview"));
     $("p5").appendChild($("grpMan")); $("p5").appendChild($("grpSits"));
     $("p6").appendChild($("cardSave"));
     ["cardFams","cardFinish","cardPreview","cardSave"].forEach(id=>{ $(id).style.display=""; $(id).classList.remove("card"); $(id).style.padding="0"; $(id).style.border="0"; $(id).style.margin="0"; });
@@ -1000,5 +1047,220 @@ for(const id of["r_w","r_h","r_lw","r_lh","r_rs","r_bar","r_vg","r_shkfr","r_gh"
 for(const id of["r_w","r_h"])$(id).addEventListener("change",famCards);
 famCards();swatches();pickFam("paintgrade");loadOptState();setMode("guided");
 </script>
+<script id="stage3djs">
+/* 21 Nov — Build Your Opening shows the customer's own door in 3D (TR 3D Engine 2.0) on every step after the range:
+   one live stage beside the picks (desktop) or pinned above them (phone), redrawn on every pick, and every option
+   tile rendered by the same engine from their door. The outside / inside drawings stay as the accurate elevation. */
+(function(){
+const STAGE={init:false,fold:0,user:false};
+const BLANK="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const T3={ids:new Map(),reg:new Map(),cache:new Map(),q:[],run:false,fin:new Set(),redo:new Set(),n:0,t0:performance.now(),io:null};
+const is3=()=>$("viz3d")&&$("viz3d").style.display!=="none";
+const live=()=>document.body.classList.contains("staged")&&is3();
+
+/* the stage */
+function stageSync(){
+  const on=(typeof MODE==="undefined"||MODE==="guided")&&STEP>=2&&STEP<=5;
+  document.body.classList.toggle("staged",on); document.body.classList.toggle("st5",on&&STEP===5);
+  if(!on) return;
+  if(!STAGE.init){ STAGE.init=true; const sg=$("v3d").parentNode; sg.insertBefore($("v3d"),sg.firstChild); setView("3d"); }
+  else if(is3()) mvShow();
+  if(STEP===5&&is3()){ clearTimeout(STAGE.t5); STAGE.t5=setTimeout(()=>{ anim3d(1,2600); STAGE.t5=setTimeout(()=>anim3d(+S.fold||0,2200),4200); },700); }
+  t3pump();
+}
+function anim3d(v,ms){ if(!window.TR3D||!TR3D._E||!TR3D._E.r) return; MV.playing=false; $("mvplay").textContent=v>=0.99?"Close":"Open"; MV.dir=v>=0.99?-1:1;
+  TR3D.animate(v,ms||1100,f=>{ $("mvfold").value=f*100; $("mvpct").textContent=Math.round(f*100)+"%"; }); }
+
+const _stepShow=stepShow;
+window.stepShow=stepShow=function(n){ _stepShow(n); stageSync(); };
+
+const _setView=setView;
+window.setView=setView=function(v){ _setView(v); const three=v==="3d"; $("openbtn").style.display=three?"none":""; t3pump(); };
+
+window.setFold=setFold=function(v){ S.fold=v; [...$("foldseg").children].forEach((b,i)=>b.classList.toggle("on",[0,1/3,2/3,1][i]===v));
+  if(is3()){ STAGE.fold=v; anim3d(v); } else draw(); };
+
+const _mvShow=mvShow;
+window.mvShow=mvShow=function(){ _mvShow(); const want=+S.fold||0; if(STAGE.fold!==want){ STAGE.fold=want; anim3d(want); } t3pump(); };
+
+/* a pick on the look cards brings its options into view under the stage */
+window.lookPick=lookPick=function(k){ LOOK=k; lookCards(); requestAnimationFrame(()=>{ const el=$("lookopts"); if(!el) return;
+  const sb=$("stagebox"), pinned=sb&&getComputedStyle(sb).position==="sticky"&&innerWidth<1000;
+  const top=pinned?sb.getBoundingClientRect().bottom:72; const r=el.getBoundingClientRect();
+  if(r.top<top||r.top>innerHeight-120) window.scrollTo({top:scrollY+r.top-top-8,behavior:"smooth"}); }); };
+
+/* the configurations, each shown as the door itself part-way open */
+window.cfgCards=cfgCards=function(){
+  const f=FAMS.find(x=>x.k===S.family)||FAMS[0]; $("cfgTitle").textContent=f.n;
+  $("cfgs").innerHTML=CFGS.map(([n,splits])=>'<div class="cfgrow"><div class="cfgn">'+n+' doors</div>'+splits.map(sp=>'<div class="cfg'+(S.doors===n&&S.split===sp?" on":"")+'" onclick="cfgPick('+n+',\''+sp+'\')">'+tileSvg({doors:n,split:sp,mandoor:null,fold:0.55})+'<div class="cl">'+sp.replace(/(\d+)L(\d+)R/,"$1L $2R")+'</div></div>').join("")+'</div>').join("");
+};
+
+
+/* the current pick always shows as picked: one clear lite is the clear lite whatever the lite count left behind says */
+const _lookOpts=lookOpts;
+window.lookOpts=lookOpts=function(){ _lookOpts(); const el=$("lookopts"); if(!el) return; const tl=[...el.querySelectorAll(".tile")];
+  if(LOOK==="cladding"&&Array.isArray(window.__lookGo)&&window.__lookGo.length===CLADP.length) window.__lookGo=window.__lookGo.map((go,i)=>()=>{ const p=CLADP[i], cv=CLADC[cladLookOf(p,S)];
+    if(cv&&S.construction!==cv){ S.construction=cv; const c=$("r_constr"); if(c){ c.value=cv; c.dataset.v=cv; } syncFamily(); } go(); });
+  if(LOOK==="glass"&&!tl.some(t=>t.classList.contains("on"))&&S.glass==="full"){ const fam=FAMS.find(f=>f.k===S.family)||{};
+    const re=fam.base==="carriage"?(S.arch==="door"?/^one arc per door$/i:(+S.lites_w>=2?/2 lites$/i:/^one arc across the opening$/i)):/^one clear lite$/i;
+    const t=tl.find(t=>re.test((t.querySelector(".tn")||t).textContent.trim())); if(t) t.classList.add("on"); } };
+
+/* every tile: the engine's render of their door with that one pick changed */
+function variant(o){ const s=miniS(o); if(s.mandoor==="none") s.mandoor=null;
+  try{ if(o&&o.family){ const c=CONSTR.find(c=>c.fam===o.family); if(c) s.construction=c.v; }      // a construction tile (setConstruction)
+    if(o&&o.clad_id&&o.clad_look&&CLADC[o.clad_look]) s.construction=CLADC[o.clad_look];          // a cladding tile (the boards come with their construction)
+    const d=s.design&&designBy(s.design); if(d&&typeof famFor==="function"){ const fk=famFor(d,s.finish_out,s.construction); if(fk&&FAMS.some(x=>x.k===fk)) s.family=fk; }   // syncFamily
+    const f=FAMS.find(x=>x.k===s.family); if(f&&f.base==="tbclad"&&f.clad) s.clad_look=f.clad; }catch(e){}
+  return s; }
+/* a cladding pick brings its construction: boards on a metal-sheet door used to change nothing you could see */
+const CLADC={horizontal:"h",vertical:"v",metal:"metal",louvre:"louvre"};
+/* a finish or construction that moves the door into another family keeps the customer's look (glass, lites, panel, lite layout) —
+   it used to put the design's own look back, so a lite or panel pick made before a finish or construction pick was undone */
+window.syncFamily=syncFamily=function(){ const d=S.design&&designBy(S.design); if(!d) return; const fam=famFor(d,S.finish_out,S.construction); if(fam!==S.family){ const keep=currentDesignO(); pickFam(fam,true); applyO(keep); } };
+function t3key(s){ const c={}; for(const k of Object.keys(s).sort()) if(k!=="view"&&k!=="situations") c[k]=s[k]; return JSON.stringify(c); }
+window.tileSvg=tileSvg=function(o){ let k,s; try{ s=JSON.parse(JSON.stringify(variant(o||{}))); k=t3key(s); }catch(e){ return ""; }   // the tile is frozen as the whole door it stands for
+  let id=T3.ids.get(k); if(!id){ id="t"+(++T3.n); T3.ids.set(k,id); T3.reg.set(id,{k,s}); }
+  const u=T3.cache.get(k); return '<img class="t3'+(u?"":" wait")+'" data-t3="'+id+'" src="'+(u||BLANK)+'" alt="">'; };
+function cacheSet(k,u){ T3.cache.delete(k); T3.cache.set(k,u); if(T3.cache.size>160) T3.cache.delete(T3.cache.keys().next().value); }
+function t3shot(s){ const E=TR3D._E, last=E.last; if(!last||!s) return null;
+  const r=E.r, cv=r.domElement, pr=r.getPixelRatio(), w=cv.clientWidth||800, h=cv.clientHeight||500, TW=520, TH=390;
+  const fx=E.fx, sz=(a,b,p)=>{ r.setPixelRatio(p); r.setSize(a,b,false); E.cam.aspect=a/b; E.cam.updateProjectionMatrix(); };   // a tile is drawn small and straight (no contact-shadow pass), the stage keeps its own
+  const cp=E.cam.position.clone(), ct=E.ctl.target.clone(), f0=E.f, m0=E.m; let u=null;
+  try{ const fam=FAMS.find(f=>f.k===s.family)||FAMS[0]; E.fx=null; sz(TW,TH,1); E.key="";
+    TR3D.show(s,fam,finBy(s.finish_out),finBy(s.finish_in||s.finish_out)); TR3D.fold(+s.fold||0); TR3D.man(0); TR3D.reset(); E.cam.position.lerp(E.ctl.target,0.46); E.ctl.update(); u=TR3D.shot(); }
+  catch(e){ console.warn("tile 3D",e); }
+  try{ sz(w,h,pr); if(fx&&E.fx===null) E.fx=fx; E.key=""; TR3D.show(last[0],last[1],last[2],last[3]); TR3D.fold(f0); TR3D.man(m0); E.cam.position.copy(cp); E.ctl.target.copy(ct); E.ctl.update(); TR3D.shot(); }catch(e){ console.warn("tile 3D restore",e); }
+  return u; }
+function t3pump(){ if(T3.run) return; T3.run=true; setTimeout(t3step,60); }
+function t3step(){ T3.run=false; if(window.__T3OFF) return;
+  const E=window.TR3D&&TR3D._E; if(!E||!E.r||!E.last||!live()) return;
+  if(E.anim||MV.playing||T3.drag||performance.now()<(T3.quiet||0)||(!E.envOk&&performance.now()-T3.t0<5000)){ T3.run=true; setTimeout(t3step,350); return; }
+  let id=null;
+  while(T3.q.length){ const c=T3.q.shift(), imgs=document.querySelectorAll('img.t3[data-t3="'+c+'"]'); if(!imgs.length) continue;
+    const r=T3.reg.get(c); if(T3.cache.has(r.k)&&!T3.redo.has(r.k)){ imgs.forEach(i=>{ i.src=T3.cache.get(r.k); i.classList.remove("wait"); }); continue; }
+    id=c; break; }
+  if(!id) return;
+  const r=T3.reg.get(id), u=t3shot(r.s);
+  if(u){ cacheSet(r.k,u); document.querySelectorAll('img.t3[data-t3="'+id+'"]').forEach(i=>{ i.src=u; i.classList.remove("wait"); }); }
+  const s=r.s, fk=[s.family,s.finish_out,s.finish_in,s.clad_fin,s.clad_id].join("|");   // a finish seen for the first time: its scans load after the first shot, so shoot it again
+  if(T3.redo.has(r.k)) T3.redo.delete(r.k); else if(!T3.fin.has(fk)){ T3.fin.add(fk); T3.redo.add(r.k); setTimeout(()=>{ T3.q.push(id); t3pump(); },1800); }
+  if(T3.q.length) { T3.run=true; setTimeout(t3step,40); }
+}
+function watch(img){ if(!T3.io) return; T3.io.observe(img); }
+T3.io=new IntersectionObserver(es=>{ for(const e of es){ const id=e.target.dataset.t3; if(e.isIntersecting){ T3.io.unobserve(e.target);
+  const r=T3.reg.get(id); if(r&&T3.cache.has(r.k)&&!T3.redo.has(r.k)){ e.target.src=T3.cache.get(r.k); e.target.classList.remove("wait"); continue; }
+  if(!T3.q.includes(id)) T3.q.push(id); t3pump(); } } },{rootMargin:"240px"});
+new MutationObserver(ms=>{ for(const m of ms) for(const n of m.addedNodes){ if(n.nodeType!==1) continue;
+  if(n.matches&&n.matches("img.t3.wait")) watch(n); n.querySelectorAll&&n.querySelectorAll("img.t3.wait").forEach(watch); } }).observe(document.body,{childList:true,subtree:true});
+addEventListener("pointerdown",e=>{ if(e.target&&e.target.closest&&e.target.closest("#mv")) T3.drag=true; },true);
+addEventListener("pointerup",()=>{ T3.drag=false; },true);
+for(const ev of ["pointerdown","keydown","wheel","touchmove"]) addEventListener(ev,()=>{ T3.quiet=performance.now()+700; },{capture:true,passive:true});
+
+window.__T3=T3; T3.shot=o=>t3shot(variant(o||{})); T3.shotS=t3shot; T3.variant=variant;
+stageSync(); if(STEP===2) cfgCards(); if(STEP===4){ driveCards(); lookCards(); }
+})();
+
+</script>
+<style id="flow4">
+/* 21 Nov — one question each, in his order: Style · Size & details · Color & hardware · Set the scene · Send */
+#step2,#step6{display:none!important}
+#drivecards,#lookcards,#lookopts,#foldseg,#mdhingebox,#hwfinbox,#hwsetbox,#grpMan,#cardFinish>h2{display:none!important}
+#step4 #p3b{display:block!important}
+.fsec{margin:22px 0 0}.fsec:first-child{margin-top:0}
+.fsec>.fl{font-family:var(--mono,monospace);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#9a948a);margin:0 0 10px;display:flex;gap:10px;align-items:baseline}
+.fsec>.fl b{color:var(--gold,#c8a96a);font-weight:400}
+#fcfg .cfgrow{margin-bottom:8px}
+#fmd svg{display:block;width:100%;max-width:520px;height:auto}
+#fmd rect{fill:#2a2724;stroke:#5a544c;stroke-width:1}
+#fmd g.ok{cursor:pointer}#fmd g.ok rect{stroke:#c8a96a}
+#fmd g.ok:hover rect{fill:#4a4132}
+#fmd g.on rect{fill:#c8a96a}
+#fmd g.no{opacity:.45}
+#fmd text{font-family:var(--mono,monospace);font-size:11px;fill:#bbb;text-anchor:middle;pointer-events:none}
+#fmd g.on text{fill:#1a1a1a}
+#step7 #p5{margin-bottom:18px}
+#step4 #p3{display:none!important}
+#cardFinish .sw{row-gap:24px}#cardFinish .swrow{margin-bottom:30px}
+.fsec .tiles{gap:8px!important}
+.fsec .tile .tn{font-size:10px;padding:6px 8px}
+@media(min-width:1000px){.fsec .tiles{grid-template-columns:repeat(4,1fr)!important}#fcfg .cfg{width:72px}#fcfg .cfg svg{width:100%;height:auto}}
+@media(max-width:999px){.fsec .tiles{grid-template-columns:repeat(3,1fr)!important}#fcfg .cfg{width:calc(33vw - 30px)!important}}
+body.f5 #snext{visibility:hidden}
+#step5 h2,#step5 .lead{display:none}
+</style>
+<script id="flow4js">
+(function(){
+const MAP=[1,3,4,5,7], NAMES=["Style","Size & details","Color & hardware","Set the scene","Send"];
+const S0=JSON.parse(JSON.stringify(S));
+const idx=()=>{ let i=MAP.indexOf(STEP); if(i<0) i=STEP===2?1:4; return i; };
+const snap=n=>n===2?3:n===6?7:n;
+function mk(host,id,label,before){ let s=$(id); if(!s){ s=document.createElement("div"); s.className="fsec"; s.id=id; s.innerHTML='<div class="fl"><span>'+label+'</span><b></b></div><div class="fb"></div>'; before?host.insertBefore(s,before):host.appendChild(s); } return s; }
+function setup(){
+  const s3=$("step3"), s4=$("step4");
+  s3.querySelector(".eyebrow").textContent="SIZE & DETAILS"; s4.querySelector(".eyebrow").textContent="COLOR & HARDWARE"; $("step5").querySelector(".eyebrow").textContent="SET THE SCENE";
+  mk(s3,"fcfg","Fold"); $("fcfg").querySelector(".fb").appendChild($("cfgs"));
+  mk(s3,"fmd","Entry door"); $("fmd").appendChild($("grpMan"));
+  mk(s3,"fglass","Glass"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding");
+  mk(s4,"fhw","Hardware");
+  $("step7").insertBefore($("p5"),$("step7").querySelector("#p6"));
+}
+/* option tiles stand on the style as it was picked, so each is drawn once and never again */
+function tileBase(){ const d=S.design&&designBy(S.design); let b={}; try{ if(d) b=designS(d,d.rep||S0.finish_out,d.c||S0.construction); }catch(e){}
+  return Object.assign({},S0,b,{doors:2,split:"1L1R",mandoor:null,fold:0,width_in:72,height_in:84,situations:{}}); }
+window.__fgo={};
+function sect(k,id,skip){
+  const host=$(id), body=host.querySelector(".fb"), keep=LOOK, ts=tileSvg, base=tileBase();
+  LOOK=k; window.tileSvg=tileSvg=o=>ts(Object.assign({},base,o));
+  try{ lookOpts(); }catch(e){ console.warn("flow",k,e); } finally{ window.tileSvg=tileSvg=ts; LOOK=keep; }
+  const src=$("lookopts"), go=window.__lookGo||[]; window.__fgo[k]=go;
+  const tiles=[...src.querySelectorAll(".tile")].map((t,i)=>({t,i})).filter(x=>!skip||!skip.test(x.t.textContent.trim()));
+  const pre=[...src.children].filter(c=>!c.classList.contains("tiles")).map(c=>c.outerHTML).join("");
+  const show=tiles.length>1; host.style.display=show?"":"none"; if(!show){ body.innerHTML=""; src.innerHTML=""; return; }
+  const on=tiles.find(x=>x.t.classList.contains("on")); { const tn=on&&on.t.querySelector(".tn"), sp=tn&&tn.querySelector("span"); host.querySelector(".fl b").textContent=tn?(sp?tn.textContent.replace(sp.textContent,"").trim()+" · "+sp.textContent.trim():tn.textContent.trim()):""; }
+  body.innerHTML=pre+'<div class="tiles">'+tiles.map(x=>{ x.t.setAttribute("onclick","__fgo."+k+"["+x.i+"]()"); return x.t.outerHTML; }).join("")+'</div>'; src.innerHTML="";
+}
+function mdDraw(){
+  const host=$("fmd"), [L,R]=stk(S.split), n=L+R, ok=looseLeaves(S.split), md=S.mandoor?S.mandoor.door:0;
+  host.style.display=ok.length?"":"none"; if(!ok.length) return;
+  let b=host.querySelector(".fb"); const w=Math.min(56,460/n), h=72, gap=L&&R?14:0; let x=2, g="";
+  for(let i=1;i<=n;i++){ if(i===L+1) x+=gap; const e=ok.includes(i), c=(i===md?"on ":"")+(e?"ok":"no");
+    g+='<g class="'+c+'"'+(e?' onclick="flowMD('+i+')"':'')+'><title>Door '+i+'</title><rect x="'+x+'" y="2" width="'+(w-3)+'" height="'+h+'"/><text x="'+(x+(w-3)/2)+'" y="'+(h/2+6)+'">'+i+'</text>'
+      +(i===md?'<circle cx="'+(mdSide(i)==="L"?x+w-11:x+8)+'" cy="'+(h/2+22)+'" r="3" fill="#1a1a1a"/>':'')+'</g>'; x+=w; }
+  b.innerHTML='<svg viewBox="0 0 '+(x+2)+' '+(h+4)+'">'+g+'</svg>';
+  host.querySelector(".fl b").textContent=md?"Door "+md+" · hinged "+(mdSide(md)==="L"?"left":"right"):"None";
+}
+window.flowMD=function(i){ const m=$("r_mandoor"), v=(S.mandoor&&S.mandoor.door===i)?"none":String(i); if(![...m.options].some(o=>o.value===v)) sel("r_mandoor",mdOpts(S.doors,S.split),v,draw); m.value=v; m.dataset.v=v; draw(); render(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
+let raf=0;
+function render(){ if(raf) return; raf=1; Promise.resolve().then(()=>{ raf=0; try{
+  if(STEP===3){ cfgCards(); mdDraw(); const fam=FAMS.find(f=>f.k===S.family)||{};
+    sect("glass","fglass"); const slab=fam.base==="tb"||fam.base==="tbclad";
+    if(slab){ $("fpanel").style.display="none"; } else sect("panel","fpanel");
+    if(fam.base==="tbclad") sect("cladding","fclad"); else $("fclad").style.display="none"; }
+  if(STEP===4){ swatches(); sect("hardware","fhw",/^(no man door|man door)/i); }
+ }catch(e){ console.warn("flow render",e); } }); }
+window.cfgCards=cfgCards=function(){ $("cfgs").innerHTML=CFGS.map(([n,splits])=>'<div class="cfgrow"><div class="cfgn">'+n+' doors</div>'+splits.map(sp=>'<div class="cfg'+(S.doors===n&&S.split===sp?" on":"")+'" onclick="cfgPick('+n+',\''+sp+'\')">'+cfgSvg(n,sp)+'<div class="cl">'+sp.replace(/(\d+)L(\d+)R/,"$1L $2R")+'</div></div>').join("")+'</div>').join("");
+  const b=$("fcfg")&&$("fcfg").querySelector(".fl b"); if(b) b.textContent=S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1L $2R"); };
+window.cfgPick=cfgPick=function(n,sp){ $("r_doors").value=String(n); $("r_doors").dataset.v=String(n); sel("r_split",splitsFor(n),sp,()=>{draw();famCards();}); sel("r_mandoor",mdOpts(n,sp),"none",draw);
+  S.doors=n; S.split=sp; draw(); famCards(); render(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
+window.lookCards=lookCards=function(){ render(); };
+window.driveCards=driveCards=function(){};
+window.lookPick=lookPick=function(){};
+const _show=stepShow;
+window.stepShow=stepShow=function(n){ _show(snap(n)); const N=idx();
+  $("steps").innerHTML=NAMES.map((nm,i)=>'<button class="'+(i===N?"on":i<N?"done":"")+'" onclick="stepShow('+MAP[i]+')"><b>'+(i+1)+'</b>'+nm+'</button>').join("");
+  document.body.classList.toggle("f5",N===4); $("sback").style.visibility=N===0?"hidden":"";
+  if(STEP===7) try{ sitRow(); }catch(e){}
+  render(); };
+window.stepGo=stepGo=function(d){ const N=Math.max(0,Math.min(4,idx()+d)); stepShow(MAP[N]); };
+window.rangePick=rangePick=function(k){ pickDesign(k); rangeCards(); stepShow(3); };
+const _draw=draw; window.draw=draw=function(){ _draw.apply(this,arguments); if(STEP===3){ try{ mdDraw(); }catch(e){} } };
+try{ ["man_door","two_tone","windowed_clad","louvre"].forEach(k=>PUBLIC_SITS.delete(k)); }catch(e){}
+const _mvPlay=mvPlay; window.mvPlay=mvPlay=function(){ const E=window.TR3D&&TR3D._E; if(!E||!E.r||$("viz3d").style.display==="none") return _mvPlay();
+  const open=+$("mvfold").value<99; MV.playing=false; MV.dir=open?-1:1; $("mvplay").textContent=open?"Close":"Open"; TR3D.animate(open?1:0,1700,f=>{ $("mvfold").value=f*100; $("mvpct").textContent=Math.round(f*100)+"%"; }); };
+setup(); stepShow(STEP);
+try{ const k=new URLSearchParams(location.search).get("style"); if(k){ const go=()=>{ if(designBy(k)&&STEP===1){ rangePick(k); return true; } }; if(!go()) setTimeout(go,1500); } }catch(e){}
+})();
+</script>
+
 </body>
 </html>
