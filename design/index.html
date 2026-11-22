@@ -1178,7 +1178,7 @@ stageSync(); if(STEP===2) cfgCards(); if(STEP===4){ driveCards(); lookCards(); }
 #fmd g.no{opacity:.45}
 #fmd text{font-family:var(--mono,monospace);font-size:11px;fill:#bbb;text-anchor:middle;pointer-events:none}
 #fmd g.on text{fill:#1a1a1a}
-#step7 #p5{margin-bottom:18px}
+#step7 #p5{margin-bottom:18px}#step7 .fsec{margin:0 0 20px}.hdrf{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:12px;margin-top:10px;max-width:760px}@media(max-width:699px){.hdrf{grid-template-columns:1fr}}
 .t24{display:flex;gap:8px}.t24 button{font-family:var(--mono,monospace);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 16px;background:transparent;color:inherit;border:1px solid var(--line,#3a3631);cursor:pointer}.t24 button.on{border-color:var(--gold,#c8a96a);color:var(--gold,#c8a96a)}
 #step4 #p3{display:none!important}
 #cardFinish .sw{row-gap:24px}#cardFinish .swrow{margin-bottom:30px}
@@ -1215,9 +1215,9 @@ function setup(){
   s3.querySelector(".eyebrow").textContent="SIZE & DETAILS"; s4.querySelector(".eyebrow").textContent="COLOR & HARDWARE"; $("step5").querySelector(".eyebrow").textContent="SET THE SCENE";
   mk(s3,"fcfg","Fold"); $("fcfg").querySelector(".fb").appendChild($("cfgs"));
   mk(s3,"fmd","Entry door · in the fold"); $("fmd").appendChild($("grpMan"));
-  mk(s3,"ft24","Heated / cooled garage"); mk(s3,"fthr","Threshold"); mk(s3,"ftop","Opening top"); mk(s3,"fglass","Glass"); mk(s3,"fgopt","Glass options"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding"); mk(s3,"fside","Sidelites"); mk(s3,"fmatch","Matching entry door");
-  mk(s4,"fhw","Hardware");
-  $("step7").insertBefore($("p5"),$("step7").querySelector("#p6"));
+  mk(s3,"ft24","Heated / cooled garage · premium"); mk(s3,"fthr","Threshold"); mk(s3,"ftop","Opening top"); mk(s3,"fglass","Glass"); mk(s3,"fgopt","Glass options"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding"); mk(s3,"fside","Sidelites"); mk(s3,"fmatch","Matching entry door");
+  mk(s4,"fhw","Hardware"); mk(s4,"fcas","Add to quote · color-matched casing");
+  $("step7").insertBefore($("p5"),$("step7").querySelector("#p6")); mk($("step7"),"fdel","Delivery",$("p5")); mk($("step7"),"finst","Install",$("p5")); mk($("step7"),"frush","Rush",$("p5")); mk($("step7"),"fhdr","Existing header",$("p5"));
 }
 /* option tiles stand on the style as it was picked, so each is drawn once and never again */
 function tileBase(){ const d=S.design&&designBy(S.design); let b={}; try{ if(d) b=designS(d,d.rep||S0.finish_out,d.c||S0.construction); }catch(e){}
@@ -1236,8 +1236,8 @@ function sect(k,id,skip){
 }
 /* a heated or cooled garage is a Title 24 opening: the Centor E3 set, its hardware on the outside face, the deeper head box, jambs and sill. One pick; the 3D draws it. */
 const isT24=()=>/E3/i.test(String(S.track||""));
-function t24Draw(){ const h=$("ft24"); if(!h) return; const on=isT24(); h.querySelector(".fl b").textContent=on?"Yes · Title 24":"No";
-  h.querySelector(".fb").innerHTML='<div class="t24">'+[["No",0],["Yes · Title 24",1]].map(([t,v])=>'<button type="button" class="'+((!!v)===on?"on":"")+'" onclick="flowT24('+v+')">'+t+'</button>').join("")+'</div>'; }
+function t24Draw(){ const h=$("ft24"); if(!h) return; const on=isT24(); h.querySelector(".fl b").textContent=on?"Yes · Title 24 · premium, added to quote":"No";
+  h.querySelector(".fb").innerHTML='<div class="t24">'+[["No",0],["Yes · Title 24 · premium",1]].map(([t,v])=>'<button type="button" class="'+((!!v)===on?"on":"")+'" onclick="flowT24('+v+')">'+t+'</button>').join("")+'</div>'; }
 /* real picks that used to be notes (Ryan 22 Nov): arched top (drawn), sidelites, a matching entry door or an oversized single pivot door */
 const sit=k=>S.situations[k], pills=(id,opts,cur,fn)=>{ const h=$(id); h.querySelector(".fl b").textContent=(opts.find(o=>o[0]===cur)||opts[0])[1]; return '<div class="t24">'+opts.map(([v,t])=>'<button type="button" class="'+(v===cur?"on":"")+'" onclick="'+fn+'(\''+v+'\')">'+t+'</button>').join("")+'</div>'; };
 const TOPS=[["square","Square"],["arched","Arched"]], SIDES=[["none","None"],["left","Left"],["right","Right"],["both","Both sides"]], MATCH=[["none","None"],["entry","Matching entry door"],["pivot","Oversized single pivot door"]];
@@ -1247,6 +1247,34 @@ function moreDraw(){ if(!$("ftop")) return;
   if(sit("arched_top")) $("ftop").querySelector(".fl b").textContent="Arched · "+((sit("arched_top").fields||{}).rise||"12")+"″ rise · carriage pair, swings out";
   $("fside").querySelector(".fb").innerHTML=pills("fside",SIDES,sideCur(),"flowSide");
   $("fmatch").querySelector(".fb").innerHTML=pills("fmatch",MATCH,matchCur(),"flowMatch"); }
+/* CASING + DELIVERY (Ryan 22 Nov). Casing: interior and / or exterior, colour matched, an extra - and not sent out of state (his rule of 17 Aug: no casing on out-of-state orders).
+   Delivery: our trailer locally for a fee (about 100 miles of the Santa Ana shop - a working number for the office, NEVER printed on the site); further when we are installing; out of state it is crated and freighted. */
+const CASE=[["none","None"],["ext","Exterior"],["int","Interior"],["both","Interior + exterior"]], DELIV=[["","Not sure yet"],["local","Local delivery"],["far","Further in California"],["oos","Out of state"]];
+const DELB={"":"","local":"Delivered by us · fee","far":"Delivered when we install · otherwise freight","oos":"Crated · freight"};
+const casCur=()=>S.casing||"none", delCur=()=>S.delivery||"", isOOS=()=>delCur()==="oos";
+function casDraw(){ const h=$("fcas"); if(!h) return; h.style.display=isOOS()?"none":""; if(isOOS()) return; const c=casCur(), on={ext:/ext|both/.test(c),int:/int|both/.test(c)};      // an add-on, picked like the glass options: each side is its own "+ add"
+  h.querySelector(".fl b").textContent=c==="none"?"":(CASE.find(o=>o[0]===c)||[])[1]+" · added";
+  h.querySelector(".fb").innerHTML='<div class="t24">'+[["ext","Exterior casing"],["int","Interior casing"]].map(([k,t])=>'<button type="button" class="'+(on[k]?"on":"")+'" onclick="flowCas(\''+k+'\')">'+(on[k]?"✓ ":"+ ")+t+'</button>').join("")+'</div>'; }
+function delDraw(){ const h=$("fdel"); if(!h) return; h.querySelector(".fb").innerHTML=pills("fdel",DELIV,delCur(),"flowDel")+(isOOS()?'<div class="f" style="margin-top:10px;max-width:120px"><label>State</label><input maxlength="2" value="'+esc(S.ship_state&&S.ship_state!=="CA"?S.ship_state:"")+'" onchange="flowState(this.value)"></div>':"");
+  h.querySelector(".fl b").textContent=delCur()?((DELIV.find(o=>o[0]===delCur())||[])[1]+(DELB[delCur()]?" · "+DELB[delCur()]:"")+(isOOS()&&S.ship_state&&S.ship_state!=="CA"?" · "+S.ship_state:"")):"Not sure yet"; }
+/* EXISTING HEADER + RUSH (Ryan 22 Nov). Header: what the beam over the opening is (solid wood / engineered wood / steel / other), its size and a description - so whoever draws the unit knows the condition before it is drawn. Rush: asked with the date it is needed by (delivery). */
+const HDR=[["","Not sure"],["solid","Solid wood"],["eng","Engineered wood"],["steel","Steel"],["other","Other"]], hdr=()=>S.hdr||(S.hdr={type:"",size:"",desc:""});
+function hdrSync(){ const h=hdr(); if(h.type||h.size||h.desc) S.situations.existing_header={fields:{header:[(HDR.find(o=>o[0]===h.type)||["",""])[1].replace("Not sure",""),h.size].filter(Boolean).join(" · "),description:h.desc||""}}; else delete S.situations.existing_header; }
+function hdrDraw(){ const el=$("fhdr"); if(!el) return; const h=hdr(); el.querySelector(".fb").innerHTML=pills("fhdr",HDR,h.type,"flowHdr")+'<div class="hdrf"><div class="f"><label>Size</label><input value="'+esc(h.size)+'" onchange="flowHdrF(\'size\',this.value)"></div><div class="f"><label>Description</label><input value="'+esc(h.desc)+'" onchange="flowHdrF(\'desc\',this.value)"></div></div>';
+  el.querySelector(".fl b").textContent=[(HDR.find(o=>o[0]===h.type)||["",""])[1].replace("Not sure",""),h.size].filter(Boolean).join(" · "); }
+window.flowHdr=function(v){ hdr().type=v; hdrSync(); hdrDraw(); try{ sumDraw(); }catch(e){} };
+window.flowHdrF=function(k,v){ hdr()[k]=String(v||"").trim().slice(0,200); hdrSync(); $("fhdr").querySelector(".fl b").textContent=[(HDR.find(o=>o[0]===hdr().type)||["",""])[1].replace("Not sure",""),hdr().size].filter(Boolean).join(" · "); try{ sumDraw(); }catch(e){} };
+function rushDraw(){ const el=$("frush"); if(!el) return; const on=!!S.rush; el.querySelector(".fl b").textContent=on?(S.need_by?"Need by "+S.need_by:"Added"):"";
+  el.querySelector(".fb").innerHTML='<div class="t24"><button type="button" class="'+(on?"on":"")+'" onclick="flowRush()">'+(on?"✓ ":"+ ")+'Rush</button></div>'+(on?'<div class="f" style="margin-top:10px;max-width:200px"><label>Need by · delivery date</label><input type="date" value="'+esc(S.need_by||"")+'" onchange="flowNeed(this.value)"></div>':""); }
+window.flowRush=function(){ S.rush=!S.rush||undefined; if(S.rush) S.situations.rush={fields:{by:S.need_by||""}}; else { delete S.situations.rush; } rushDraw(); try{ sumDraw(); }catch(e){} };
+window.flowNeed=function(v){ S.need_by=/^\d{4}-\d{2}-\d{2}$/.test(v)?v:undefined; if(S.situations.rush) S.situations.rush.fields.by=S.need_by||""; rushDraw(); try{ sumDraw(); }catch(e){} };
+/* INSTALL (Ryan 22 Nov): the homeowner or their contractor installs it themselves, or they ask for a local installation quote */
+const INST=[["","Not sure yet"],["self","Homeowner / contractor installs"],["quote","Send me a local installation quote"]], instCur=()=>S.install||"";
+function instDraw(){ const h=$("finst"); if(!h) return; h.querySelector(".fb").innerHTML=pills("finst",INST,instCur(),"flowInst"); }
+window.flowInst=function(v){ S.install=v||undefined; if(v==="self") S.situations.install_others={fields:{installer:"homeowner / contractor"}}; else delete S.situations.install_others; instDraw(); try{ sumDraw(); }catch(e){} };
+window.flowCas=function(k){ const c=casCur(); let e=/ext|both/.test(c), i=/int|both/.test(c); if(k==="ext") e=!e; else if(k==="int") i=!i; else { e=/ext|both/.test(k); i=/int|both/.test(k); } S.casing=e&&i?"both":e?"ext":i?"int":undefined; casDraw(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
+window.flowDel=function(v){ S.delivery=v||undefined; if(v==="oos"){ S.casing=undefined; S.situations.out_of_state={fields:{state:S.ship_state&&S.ship_state!=="CA"?S.ship_state:""}}; } else { delete S.situations.out_of_state; S.ship_state=v?"CA":undefined; } delDraw(); try{ sumDraw(); }catch(e){} };
+window.flowState=function(v){ v=String(v||"").toUpperCase().replace(/[^A-Z]/g,"").slice(0,2); S.ship_state=v||undefined; if(S.situations.out_of_state) S.situations.out_of_state.fields.state=v; delDraw(); try{ sumDraw(); }catch(e){} };
 const re3d=()=>{ if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
 /* ARCHED TOP = A CARRIAGE PAIR (Ryan 22 Nov): the door tops follow the arc so they can swing OUT; they cannot fold. Picking Arched sets the fold to 1L 1R; picking any other fold drops the arch. (Inswing folding behind an arch is a one-every-other-year job - not offered here.) */
 const isPair=()=>S.doors===2&&S.split==="1L1R";
@@ -1286,7 +1314,7 @@ function render(){ if(raf) return; raf=1; Promise.resolve().then(()=>{ raf=0; tr
     sect("glass","fglass"); const slab=fam.base==="tb"||fam.base==="tbclad";
     if(slab){ $("fpanel").style.display="none"; } else sect("panel","fpanel");
     if(fam.base==="tbclad") sect("cladding","fclad"); else $("fclad").style.display="none";  goptDraw(); moreDraw(); }
-  if(STEP===4){ swatches(); sect("hardware","fhw",/^(no man door|man door)/i); }
+  if(STEP===4){ swatches(); sect("hardware","fhw",/^(no man door|man door)/i); casDraw(); }
  }catch(e){ console.warn("flow render",e); } }); }
 window.cfgCards=cfgCards=function(){ $("cfgs").innerHTML=CFGS.map(([n,splits])=>'<div class="cfgrow"><div class="cfgn">'+n+' doors</div>'+splits.map(sp=>'<div class="cfg'+(S.doors===n&&S.split===sp?" on":"")+'" onclick="cfgPick('+n+',\''+sp+'\')">'+cfgSvg(n,sp)+'<div class="cl">'+sp.replace(/(\d+)L(\d+)R/,"$1L $2R")+'</div></div>').join("")+'</div>').join("");
   const b=$("fcfg")&&$("fcfg").querySelector(".fl b"); if(b) b.textContent=S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1L $2R"); };
@@ -1306,10 +1334,13 @@ function onLabel(k,skip){ const keep=LOOK, ts=tileSvg; let out=""; LOOK=k; windo
   return out; }
 function picks(){ const fam=FAMS.find(f=>f.k===S.family)||{}, d=S.design&&designBy(S.design), fo=finBy(S.finish_out), fi=finBy(S.finish_in), slab=fam.base==="tb"||fam.base==="tbclad", R=[];
   R.push(["Door",3,[["Style",(d&&(d.n||d.name))||fam.n||""],["Opening",(ftin(S.width_in)+" wide × "+ftin(S.height_in)+" high").replace(/\s+/g," ")],["Fold",S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1 left, $2 right").replace(/^(\d+)L$/,"$1 left").replace(/^(\d+)R$/,"$1 right")],["Drive",S.motorized?"Automated":"Manual"],
-    ["Entry door in the fold",S.mandoor?"Door "+S.mandoor.door+" · hinged "+(S.mandoor.hinge==="R"?"right":"left"):(looseLeaves(S.split).length?"None":"")],["Heated / cooled",isT24()?"Yes · Title 24":"No"],["Threshold",isT24()?"":(isSunk()?"Sunken · ¼″ proud":"On the slab")],["Opening top",sit("arched_top")?"Arched · "+((sit("arched_top").fields||{}).rise||"12")+"″ rise · carriage pair, swings out":""],["Glass",onLabel("glass")],["Glass options",(S.glass&&S.glass!=="none")?gNames().join(" · "):""],["Panel",slab?"":onLabel("panel")],["Cladding",fam.base==="tbclad"?onLabel("cladding"):""],["Sidelites",sit("sidelites")?(SIDES.find(o=>o[0]===sideCur())||[])[1]:""],["Matching entry door",matchCur()==="none"?"":(MATCH.find(o=>o[0]===matchCur())||[])[1]]]]);
-  R.push(["Color & hardware",4,[["Outside",fo.n],["Inside",fi.n],["Hardware",onLabel("hardware",/^(no man door|man door)/i)]]]);
+    ["Entry door in the fold",S.mandoor?"Door "+S.mandoor.door+" · hinged "+(S.mandoor.hinge==="R"?"right":"left"):(looseLeaves(S.split).length?"None":"")],["Heated / cooled",isT24()?"Yes · Title 24 · premium":"No"],["Threshold",isT24()?"":(isSunk()?"Sunken · ¼″ proud":"On the slab")],["Opening top",sit("arched_top")?"Arched · "+((sit("arched_top").fields||{}).rise||"12")+"″ rise · carriage pair, swings out":""],["Glass",onLabel("glass")],["Glass options",(S.glass&&S.glass!=="none")?gNames().join(" · "):""],["Panel",slab?"":onLabel("panel")],["Cladding",fam.base==="tbclad"?onLabel("cladding"):""],["Sidelites",sit("sidelites")?(SIDES.find(o=>o[0]===sideCur())||[])[1]:""],["Matching entry door",matchCur()==="none"?"":(MATCH.find(o=>o[0]===matchCur())||[])[1]]]]);
+  R.push(["Color & hardware",4,[["Outside",fo.n],["Inside",fi.n],["Hardware",onLabel("hardware",/^(no man door|man door)/i)],["Casing",casCur()==="none"||isOOS()?"":(CASE.find(o=>o[0]===casCur())||[])[1]+" · color matched · add-on"]]]);
+  if(delCur()||instCur()) R.push(["Delivery & install",7,[["Delivery",delCur()?(DELIV.find(o=>o[0]===delCur())||[])[1]+(DELB[delCur()]?" · "+DELB[delCur()]:"")+(isOOS()&&S.ship_state&&S.ship_state!=="CA"?" · "+S.ship_state:""):""],["Install",instCur()?(INST.find(o=>o[0]===instCur())||[])[1]:""]]]);
+  if(S.rush) R.push(["Timing",7,[["Rush",S.need_by?"Need by "+S.need_by:"Yes"]]]);
+  if(S.situations.existing_header) R.push(["Site",7,[["Existing header",S.situations.existing_header.fields.header],["Description",S.situations.existing_header.fields.description]]]);
   if(SCENE.length) R.push(["Scene",5,SCENE]);
-  let sn=[]; try{ sn=sitNotes().filter(t=>!/^(Title 24|Sunken threshold|Special glass|Arched top|Sidelites|Entry door|Single pivot door)/i.test(t)); }catch(e){} if(sn.length) R.push(["Details",7,sn.map((t,i)=>[i?"":"Notes",t])]);
+  let sn=[]; try{ sn=sitNotes().filter(t=>!/^(Title 24|Sunken threshold|Special glass|Arched top|Sidelites|Entry door|Single pivot door|Out of state|Install by others|Existing header condition|Rush)/i.test(t)); }catch(e){} if(sn.length) R.push(["Details",7,sn.map((t,i)=>[i?"":"Notes",t])]);
   return R.map(([h,st,rows])=>[h,st,rows.filter(r=>r[1])]).filter(g=>g[2].length); }
 function sumDraw(){ let host=$("fsum"); if(!host){ host=document.createElement("div"); host.id="fsum"; const s7=$("step7"); s7.insertBefore(host,s7.querySelector(".lead").nextSibling); }
   let pv=""; if(SHOT) pv='<img alt="" src="'+SHOT+'">'; else { try{ pv=renderDoorViz(S); }catch(e){} }
@@ -1335,18 +1366,18 @@ window.__picks=picks;
 /* what the office record needs to prepopulate (book 2009 reads these keys into the sale spec the Agreement shares):
    track / system "E3" for a heated or cooled garage, threshold "sunken", the design and the hardware set - beside what conceptSpec already carries */
 { const _cs=conceptSpec; window.conceptSpec=conceptSpec=function(){ const o=_cs.apply(this,arguments), sp=(o&&o.spec&&typeof o.spec==="object")?o.spec:o;
-    try{ if(isT24()){ sp.track="E3"; sp.system="E3"; } if(isSunk()&&!isT24()) sp.threshold="sunken"; if(S.design) sp.design=S.design; if(gSel().length&&S.glass&&S.glass!=="none") sp.glass_opts=gSel().slice(); if(S.mandoor&&S.hw_set) sp.hw_set=S.hw_set; sp.drive=S.motorized?"motorized":"manual"; }catch(e){ console.warn("flow spec",e); }
+    try{ if(isT24()){ sp.track="E3"; sp.system="E3"; } if(isSunk()&&!isT24()) sp.threshold="sunken"; if(S.design) sp.design=S.design; if(!isOOS()&&casCur()!=="none"){ sp.casing_ext=/ext|both/.test(casCur()); sp.casing_int=/int|both/.test(casCur()); sp.casing_match=true; } if(instCur()) sp.install=instCur(); if(S.rush){ sp.rush=true; if(S.need_by) sp.need_by=S.need_by; } if(S.situations.existing_header) sp.existing_header={beam:hdr().type||undefined,size:hdr().size||undefined,description:hdr().desc||undefined}; if(delCur()){ sp.delivery=delCur(); sp.out_of_state=isOOS(); sp.ship_state=isOOS()?(S.ship_state||undefined):"CA"; sp.delivery_mode=isOOS()?"carrier":delCur()==="local"?"own_truck":undefined; } if(gSel().length&&S.glass&&S.glass!=="none") sp.glass_opts=gSel().slice(); if(S.mandoor&&S.hw_set) sp.hw_set=S.hw_set; sp.drive=S.motorized?"motorized":"manual"; }catch(e){ console.warn("flow spec",e); }
     return o; }; }
 const _show=stepShow;
 window.stepShow=stepShow=function(n){ if(snap(n)===7&&STEP!==7) grab(); _show(snap(n)); const N=idx();
   $("steps").innerHTML=NAMES.map((nm,i)=>'<button class="'+(i===N?"on":i<N?"done":"")+'" onclick="stepShow('+MAP[i]+')"><b>'+(i+1)+'</b>'+nm+'</button>').join("");
   document.body.classList.toggle("f5",N===4); $("sback").style.visibility=N===0?"hidden":"";
-  if(STEP===7){ try{ sitRow(); }catch(e){} try{ sumDraw(); }catch(e){ console.warn('flow sum',e); } }
+  if(STEP===7){ try{ delDraw(); instDraw(); rushDraw(); hdrDraw(); }catch(e){} try{ sitRow(); }catch(e){} try{ sumDraw(); }catch(e){ console.warn('flow sum',e); } }
   render(); };
 window.stepGo=stepGo=function(d){ const N=Math.max(0,Math.min(4,idx()+d)); stepShow(MAP[N]); };
 window.rangePick=rangePick=function(k){ pickDesign(k); rangeCards(); stepShow(3); };
 const _draw=draw; window.draw=draw=function(){ _draw.apply(this,arguments); if(STEP===3){ try{ mdDraw(); }catch(e){} } };
-try{ ["man_door","two_tone","windowed_clad","louvre","sunken_threshold","glass_special","arched_top","sidelites","entry_door","pivot_single","reuse_opening","radius","transom"].forEach(k=>PUBLIC_SITS.delete(k)); }catch(e){}
+try{ ["man_door","two_tone","windowed_clad","louvre","sunken_threshold","glass_special","arched_top","sidelites","entry_door","pivot_single","reuse_opening","radius","transom","out_of_state","install_others","existing_header","rush"].forEach(k=>PUBLIC_SITS.delete(k)); }catch(e){}
 const _mvPlay=mvPlay; window.mvPlay=mvPlay=function(){ const E=window.TR3D&&TR3D._E; if(!E||!E.r||$("viz3d").style.display==="none") return _mvPlay();
   const open=+$("mvfold").value<99; MV.playing=false; MV.dir=open?-1:1; $("mvplay").textContent=open?"Close":"Open"; TR3D.animate(open?1:0,1700,f=>{ $("mvfold").value=f*100; $("mvpct").textContent=Math.round(f*100)+"%"; }); };
 /* the Details menus show only what is still asked there; a pick made earlier in the flow is not repeated as a chip */
@@ -1354,7 +1385,7 @@ window.sitRow=sitRow=function(){ const menus=$("sitmenus"), el=$("sits"); if(!me
   menus.innerHTML=SIT_GROUPS.map(g=>{ const opts=SITS.filter(s=>s.g===g.k&&pub(s.k)&&!S.situations[s.k]); if(!opts.length) return "";
     return '<div class="f"><label>'+esc(g.n)+'</label><select onchange="if(this.value){sitToggle(this.value);}this.value=\'\'"><option value="">—</option>'+opts.map(s=>'<option value="'+s.k+'">'+esc(s.n)+'</option>').join("")+'</select></div>'; }).join("");
   el.innerHTML=Object.keys(S.situations).filter(pub).map(k=>{ const s=SITS.find(x=>x.k===k)||{n:k,f:[]};
-    return '<span class="sit on">'+esc(s.n)+'<span class="x" onclick="sitToggle(\''+k+'\')">✕</span></span>'+(s.f.length?'<span class="sitf">'+s.f.map(f=>'<input placeholder="'+esc(f)+'" value="'+esc((S.situations[k].fields||{})[f]||"")+'" oninput="sitField(\''+k+'\',\''+esc(f)+'\',this.value)">').join("")+'</span>':""); }).join(""); };
+    return '<span class="sit on">'+esc(s.n)+'<span class="x" onclick="sitToggle(\''+k+'\')">✕</span></span>'+(s.f.length?'<span class="sitf">'+s.f.map(f=>'<input placeholder="'+esc(f)+'" value="'+esc((S.situations[k].fields||{})[f]||"")+'" oninput="sitField(\''+k+'\',\''+esc(f)+'\',this.value)">').join("")+'</span>':""); }).join(""); try{ $("p5").style.display=(menus.innerHTML||el.innerHTML)?"":"none"; }catch(e){} };
 { const _sit=sitRow; window.sitRow=sitRow=function(){ _sit.apply(this,arguments); if(STEP===7&&$('fsum')) try{ sumDraw(); }catch(e){} }; }
 setup(); stepShow(STEP);
 try{ const k=new URLSearchParams(location.search).get("style"); if(k){ const go=()=>{ if(designBy(k)&&STEP===1){ rangePick(k); return true; } }; if(!go()) setTimeout(go,1500); } }catch(e){}
