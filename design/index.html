@@ -1180,6 +1180,12 @@ stageSync(); if(STEP===2) cfgCards(); if(STEP===4){ driveCards(); lookCards(); }
 #fmd g.on text{fill:#1a1a1a}
 #step7 #p5{margin-bottom:18px}#step7 .fsec{margin:0 0 20px}.hdrf{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:12px;margin-top:10px;max-width:760px}@media(max-width:699px){.hdrf{grid-template-columns:1fr}}
 .t24{display:flex;gap:8px}
+#q_msgline.fthx{display:block;grid-column:1/-1;color:var(--fg,#f5f5f5);margin-top:18px;padding:22px 24px;border:1px solid var(--gold,#c8a96a);max-width:760px;box-sizing:border-box}
+@media(max-width:699px){#q_msgline.fthx{padding:18px 16px}}
+.fthx strong{display:block;font-size:clamp(20px,2.4vw,26px);line-height:1.2;font-weight:600;margin-bottom:10px}
+.fthx span{display:block;font-size:15px;line-height:1.55;opacity:.9}
+.fthx em{display:block;font-style:normal;margin-top:14px;font-family:var(--mono,monospace);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.fthx em b{color:var(--gold,#c8a96a)}
 #fpho .ph{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #fpho .ph div{position:relative;width:88px;height:88px;border:1px solid var(--line,#3a3631)}
 #fpho .ph img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1381,7 +1387,10 @@ window.sendEnquiry=sendEnquiry=async function(){
   /* the render they were looking at goes with it (tr-intake 5.28 kind render) - the office's enquiry sheet shows it */
   try{ const m=r.key&&/^data:(image\/(jpeg|png));base64,(.+)$/.exec(SHOT||""); if(m){ const bin=atob(m[3]), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); const bl=new Blob([u8],{type:m[1]}), u=await call({action:"enquiry_photo_url",key:r.key,ext:m[2]==="png"?"png":"jpg",kind:"render"}); if(u.ok){ const put=await fetch(u.url,{method:"PUT",headers:{"content-type":m[1]},body:bl}); if(put.ok) await call({action:"enquiry_photo_record",key:r.key,path:u.path}); } } }catch(e){}
   let pho=""; if(PHO.length){ const n=PHO.length; let ok=0; if(r.key){ go.textContent="Sending photos…"; ok=await phoSend(r.key,i=>{ line.textContent="Photos "+i+" / "+n; }); } pho=' Photos: <b>'+ok+' of '+n+'</b>'; }
-  $("q_go").parentNode.style.display="none"; line.innerHTML='<b>Sent.</b> We will come back to you with a quote and your concept drawing.'+(r.label&&r.label!=="received"?' Your reference: <b>'+esc(r.label)+'</b>':'')+pho;
+  /* the confirmation - his words (Ryan 22 Nov) */
+  $("q_go").parentNode.style.display="none"; line.className=(line.className+" fthx").trim();
+  { const ref=r.label&&r.label!=="received"?'Your reference: <b>'+esc(r.label)+'</b>':"", tail=[ref,pho.trim()].filter(Boolean).join(" &nbsp;–&nbsp; ");
+    line.innerHTML='<strong>Thank you — Your doors start here!</strong><span>Every Tungsten Royce door is custom crafted to its opening. We’ll turn what you built into a quote and a concept drawing, then call or email you to go through it.</span>'+(tail?'<em>'+tail+'</em>':""); try{ line.scrollIntoView({block:"center",behavior:"smooth"}); }catch(e){} }
 };
 window.__picks=picks;
 /* what the office record needs to prepopulate (book 2009 reads these keys into the sale spec the Agreement shares):
