@@ -1379,7 +1379,7 @@ window.sendEnquiry=sendEnquiry=async function(){
   const head=[sp.family, S.doors+" doors · "+S.split, ftin(S.width_in)+" × "+ftin(S.height_in), S.motorized?"automated":"manual", "outside "+sp.finish_out+(sp.finish_in!==sp.finish_out?" · inside "+sp.finish_in:"")].filter(Boolean).join(" · ");
   const list=P.map(([h,st,rows])=>h.toUpperCase()+"\n"+rows.map(r=>"  "+(r[0]?r[0]+": ":"  ")+r[1]).join("\n")).join("\n");
   let scene; try{ scene=SCENE.length?Object.fromEntries(SCENE):undefined; }catch(e){}
-  const r=await call({action:"enquiry",name,email,phone,site:$("q_site").value,website:$("q_web").value,
+  const r=await call({action:"enquiry",mail_later:true,name,email,phone,site:$("q_site").value,website:$("q_web").value,
     interest:sp.family,size:ftin(S.width_in)+" × "+ftin(S.height_in),
     config:{w:+(S.width_in/12).toFixed(2),h:+(S.height_in/12).toFixed(2),panels:S.doors,frame:sp.family,infill:(sp.glass&&sp.glass!=="none")?"glass "+sp.glass:"solid",automation:S.motorized?"automated":"manual",spec:sp,concept:conceptSpec(),design:S.design||undefined,track:S.track||undefined,hw_finish:S.hw_finish,hw_set:S.mandoor?S.hw_set:undefined,selections:flat,scene},
     message:"DESIGN YOUR DOOR — "+head+"\n\n"+list+(($("q_msg").value||"").trim()?"\n\nFROM THE CUSTOMER\n"+$("q_msg").value.trim():"")});
@@ -1387,6 +1387,8 @@ window.sendEnquiry=sendEnquiry=async function(){
   /* the render they were looking at goes with it (tr-intake 5.28 kind render) - the office's enquiry sheet shows it */
   try{ const m=r.key&&/^data:(image\/(jpeg|png));base64,(.+)$/.exec(SHOT||""); if(m){ const bin=atob(m[3]), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); const bl=new Blob([u8],{type:m[1]}), u=await call({action:"enquiry_photo_url",key:r.key,ext:m[2]==="png"?"png":"jpg",kind:"render"}); if(u.ok){ const put=await fetch(u.url,{method:"PUT",headers:{"content-type":m[1]},body:bl}); if(put.ok) await call({action:"enquiry_photo_record",key:r.key,path:u.path}); } } }catch(e){}
   let pho=""; if(PHO.length){ const n=PHO.length; let ok=0; if(r.key){ go.textContent="Sending photos…"; ok=await phoSend(r.key,i=>{ line.textContent="Photos "+i+" / "+n; }); } pho=' Photos: <b>'+ok+' of '+n+'</b>'; }
+  /* the uploads are up: now the office notice and the confirmation go, with the render and the photos in them (tr-intake 5.33) */
+  if(r.key){ try{ await call({action:"enquiry_done",key:r.key}); }catch(e){} }
   /* the confirmation - his words (Ryan 22 Nov) */
   $("q_go").parentNode.style.display="none"; line.className=(line.className+" fthx").trim();
   { const ref=r.label&&r.label!=="received"?'Your reference: <b>'+esc(r.label)+'</b>':"", tail=[ref,pho.trim()].filter(Boolean).join(" &nbsp;–&nbsp; ");
