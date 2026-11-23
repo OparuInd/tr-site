@@ -133,7 +133,7 @@ button{border-radius:0;background:var(--sec);color:var(--fg);border:1px solid va
 .rng:hover .go{color:var(--fg)}
 .cfgwrap{gap:28px}.cfgbig svg{border-radius:0;border:1px solid var(--bd)}
 .cfgn{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--acc)}.cfg{background:var(--card);border:1px solid var(--bd);border-radius:0}.cfg.on{background:#2a2419;border-color:var(--acc)}
-.cfg .cl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--fg)}.cfg .cl .man{display:block;font-style:normal;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-top:2px}.cfg svg rect{fill:#1f1f1f;stroke:#f5f5f5}.cfg svg path[stroke-dasharray]{stroke:#cfcfcf}.cfg svg line,.cfg svg path:not([stroke-dasharray]){stroke:#a98b66;fill:#a98b66}
+.cfg .cl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--fg)}.ghin{display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-family:var(--mono);font-size:11px;color:var(--mut,#999)}.ghin input{width:74px;background:transparent;border:1px solid var(--bd);color:var(--fg);padding:7px 8px;font:inherit}.cfg .cl .man{display:block;font-style:normal;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin-top:2px}.cfg svg rect{fill:#1f1f1f;stroke:#f5f5f5}.cfg svg path[stroke-dasharray]{stroke:#cfcfcf}.cfg svg line,.cfg svg path:not([stroke-dasharray]){stroke:#a98b66;fill:#a98b66}
 .fam{background:var(--card);border:1px solid var(--bd);border-radius:0}.fam.on{background:#2a2419;border-color:var(--acc)}.fam .fn{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
 .swb{border-radius:0}.swb .nm{color:#ddd;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em}
 .combo{border-radius:0;background:transparent;border:1px solid var(--bd);color:var(--fg);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
@@ -740,7 +740,7 @@ function draw(){
   S.hw_set=$("r_hwset").dataset.v||"sqlever";
   const fc9=FAMS.find(x=>x.k===S.family);
   if(fc9&&fc9.glass==="band"&&$("r_glass").dataset.v)S.glass=$("r_glass").dataset.v; // never clobber non-band fams (stale-preview bug)
-  S.panel_style=$("r_panel").dataset.v||"auto";
+  S.panel_style=$("r_panel").dataset.v||"auto"; if(window.__lowSync) __lowSync();
   S.arch=$("r_arch").dataset.v||"opening";
   S.rs_face=+$("r_rs").value||5;
   S.bar_w=+$("r_bar").value||1.5;
@@ -1225,7 +1225,7 @@ function setup(){
   s3.querySelector(".eyebrow").textContent="SIZE & DETAILS"; s4.querySelector(".eyebrow").textContent="COLOR & HARDWARE"; $("step5").querySelector(".eyebrow").textContent="SET THE SCENE";
   mk(s3,"fcfg","Fold"); $("fcfg").querySelector(".fb").appendChild($("cfgs"));
   mk(s3,"fmd","Entry door · in the fold"); $("fmd").appendChild($("grpMan"));
-  mk(s3,"ft24","Heated / cooled garage · premium"); mk(s3,"fthr","Threshold"); mk(s3,"ftop","Opening top"); mk(s3,"fglass","Glass"); mk(s3,"fgopt","Glass options"); mk(s3,"fpanel","Panel"); mk(s3,"fclad","Cladding"); mk(s3,"fside","Sidelites"); mk(s3,"fmatch","Matching entry door");
+  mk(s3,"ft24","Heated / cooled garage · premium"); mk(s3,"fthr","Threshold"); mk(s3,"ftop","Opening top"); mk(s3,"fglass","Glass"); mk(s3,"fgh","Glass height"); mk(s3,"fgopt","Glass options"); mk(s3,"fpanel","Panel"); mk(s3,"fstile","Panel stiles"); mk(s3,"fclad","Cladding"); mk(s3,"fside","Sidelites"); mk(s3,"fmatch","Matching entry door");
   mk(s4,"fhw","Hardware"); mk(s4,"fcas","Add to quote · color-matched casing");
   $("step7").insertBefore($("p5"),$("step7").querySelector("#p6")); mk($("step7"),"fdel","Delivery",$("p5")); mk($("step7"),"finst","Install",$("p5")); mk($("step7"),"frush","Rush",$("p5")); mk($("step7"),"fhdr","Existing header",$("p5")); mk($("step7"),"fpho","Site photos",$("p5"));
 }
@@ -1316,6 +1316,23 @@ window.flowGopt=function(k){ const a=gSel().slice(), i=a.indexOf(k); if(i<0) a.p
   if(a.length) S.situations.glass_special={fields:{glass:gNames().join(", ")}}; else delete S.situations.glass_special;
   goptDraw(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
 const isSunk=()=>!!S.situations.sunken_threshold;
+/* panel stiles (Ryan 23 Nov): none (single panel) / 1 / 2 / 3 plant-on stiles in the lower panel. Until they pick, the panels follow the glass columns
+   (2 lites wide = 2 panels - W-0008 drew 2 x 2 glass over three panels). The pick is S.stiles; the engine reads S.lower ("1" / "2v" / "3v" / "4v"). */
+const STILES=["None · single panel","1","2","3"];
+const stileOn=()=>{ const f=FAMS.find(x=>x.k===S.family)||{}; return f.base==="rs"&&S.panel_style!=="vgroove"&&S.panel_style!=="louvre"; };
+const stileCur=()=>{ const m=/^([2-6])v$/.exec(String(S.lower||"")); return m?Math.min(3,+m[1]-1):(S.lower==="1"?0:2); };
+window.__lowSync=function(){ if(!stileOn()){ delete S.lower; return; } if(S.stiles!=null){ S.lower=S.stiles===0?"1":(S.stiles+1)+"v"; return; }
+  const n=+S.lites_w||0; if((S.glass==="divided"||S.glass==="awning")&&n>=2&&n<=4) S.lower=n+"v"; else delete S.lower; };
+function stileDraw(){ const h=$("fstile"); if(!h) return; h.style.display=stileOn()?"":"none"; if(!stileOn()) return; const c=stileCur(); h.querySelector(".fl b").textContent=STILES[c];
+  h.querySelector(".fb").innerHTML='<div class="t24">'+STILES.map((t,i)=>'<button type="button" class="'+(i===c?"on":"")+'" onclick="flowStile('+i+')">'+t+'</button>').join("")+'</div>'; }
+window.flowStile=function(i){ S.stiles=i; draw(); stileDraw(); render(); if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); };
+{ const _rp=window.rangePick; window.rangePick=rangePick=function(k){ delete S.stiles; try{ $("r_gh").value=0; }catch(e){} return _rp.apply(this,arguments); }; }
+/* glass height back in the flow (Ryan 23 Nov): Standard = the engine's own rule (square lites), or a daylight height in inches (the engine's glass_h, already in the spec as glass_h_in) */
+const ghTxt=v=>String(+(+v).toFixed(2))+"″";
+function ghDraw(){ const h=$("fgh"); if(!h) return; const on=S.glass&&S.glass!=="none"; h.style.display=on?"":"none"; if(!on) return; const v=+S.glass_h||0; h.querySelector(".fl b").textContent=v>0?ghTxt(v):"Standard";
+  const fb=h.querySelector(".fb"); if(fb.querySelector("input")&&fb.querySelector("input")===document.activeElement){ fb.querySelector("button").className=v>0?"":"on"; return; }
+  fb.innerHTML='<div class="t24"><button type="button" class="'+(v>0?"":"on")+'" onclick="flowGH(0)">Standard</button><label class="ghin"><input type="number" min="0" step="0.25" inputmode="decimal" value="'+(v>0?v:"")+'" oninput="flowGH(this.value,1)"><span>in</span></label></div>'; }
+window.flowGH=function(v,typing){ const g=$("r_gh"); g.value=+v>0?+v:0; draw(); if(!typing){ const i=$("fgh").querySelector("input"); if(i) i.blur(); } ghDraw(); if(!typing) render(); clearTimeout(window.__ghT); window.__ghT=setTimeout(()=>{ if($("viz3d")&&$("viz3d").style.display!=="none") mvShow(); },typing?500:0); };
 const isDO=()=>isT24()&&(((S.situations.title24||{}).fields||{}).threshold==="drive-over"), THR24=["Sealed · raised back","Drive-over · full jamb width"];
 function thrDraw(){ const h=$("fthr"); if(!h) return; h.style.display=""; const t=isT24(), on=t?isDO():isSunk(), L=t?THR24:["On the slab","Sunken · ¼″ proud"]; h.querySelector(".fl b").textContent=L[on?1:0];
   h.querySelector(".fb").innerHTML='<div class="t24">'+[[L[0],0],[L[1],1]].map(([t,v])=>'<button type="button" class="'+((!!v)===on?"on":"")+'" onclick="flowThr('+v+')">'+t+'</button>').join("")+'</div>'; }
@@ -1336,7 +1353,7 @@ let raf=0;
 function render(){ if(raf) return; raf=1; Promise.resolve().then(()=>{ raf=0; try{
   if(STEP===3){ cfgCards(); mdDraw(); t24Draw(); thrDraw(); const fam=FAMS.find(f=>f.k===S.family)||{};
     sect("glass","fglass"); const slab=fam.base==="tb"||fam.base==="tbclad";
-    if(slab){ $("fpanel").style.display="none"; } else sect("panel","fpanel");
+    if(slab){ $("fpanel").style.display="none"; } else sect("panel","fpanel"); stileDraw(); ghDraw();
     if(fam.base==="tbclad") sect("cladding","fclad"); else $("fclad").style.display="none";  goptDraw(); moreDraw(); }
   if(STEP===4){ swatches(); sect("hardware","fhw",/^(no man door|man door)/i); casDraw(); }
  }catch(e){ console.warn("flow render",e); } }); }
@@ -1357,10 +1374,10 @@ function onLabel(k,skip){ const keep=LOOK, ts=tileSvg; let out=""; LOOK=k; windo
   try{ lookOpts(); const t=[...$("lookopts").querySelectorAll(".tile")].filter(x=>!skip||!skip.test(x.textContent.trim())); const on=t.find(x=>x.classList.contains("on")); if(on&&t.length>1){ const tn=on.querySelector(".tn"), sp=tn&&tn.querySelector("span"); out=tn?(sp?tn.textContent.replace(sp.textContent,"").trim()+" · "+sp.textContent.trim():tn.textContent.trim()):""; } }catch(e){} finally{ window.tileSvg=tileSvg=ts; LOOK=keep; $("lookopts").innerHTML=""; }
   return out; }
 /* the style line is the card they clicked only while the door still IS that card (Ryan 23 Nov: what they ultimately choose follows to the enquiry) */
-function dSame(d){ try{ return Object.entries(d.o||{}).every(([k,v])=>S[k]===undefined||String(S[k])===String(v)); }catch(e){ return true; } }
+function dSame(d){ try{ if(S.stiles!=null&&/three panels/.test(d.n||"")&&S.stiles!==2) return false; return Object.entries(d.o||{}).every(([k,v])=>S[k]===undefined||String(S[k])===String(v)); }catch(e){ return true; } }
 function picks(){ const fam=FAMS.find(f=>f.k===S.family)||{}, d=S.design&&designBy(S.design), fo=finBy(S.finish_out), fi=finBy(S.finish_in), slab=fam.base==="tb"||fam.base==="tbclad", R=[];
-  R.push(["Door",3,[["Style",(d&&dSame(d)&&(d.n||d.name))||fam.n||""],["Opening",(ftin(S.width_in)+" wide × "+ftin(S.height_in)+" high").replace(/\s+/g," ")],["Fold",S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1 left, $2 right").replace(/^(\d+)L$/,"$1 left").replace(/^(\d+)R$/,"$1 right")],["Drive",S.motorized?"Automated":"Manual"],
-    ["Entry door in the fold",S.mandoor?"Door "+S.mandoor.door+" · hinged "+(S.mandoor.hinge==="R"?"right":"left"):(looseLeaves(S.split).length?"None":"")],["Heated / cooled",isT24()?"Yes · Title 24 · premium":"No"],["Threshold",isT24()?THR24[isDO()?1:0]:(isSunk()?"Sunken · ¼″ proud":"On the slab")],["Opening top",sit("arched_top")?"Arched · "+((sit("arched_top").fields||{}).rise||"12")+"″ rise · carriage pair, swings out":""],["Glass",onLabel("glass")],["Glass options",(S.glass&&S.glass!=="none")?gNames().join(" · "):""],["Panel",slab?"":onLabel("panel")],["Cladding",fam.base==="tbclad"?onLabel("cladding"):""],["Sidelites",sit("sidelites")?(SIDES.find(o=>o[0]===sideCur())||[])[1]:""],["Matching entry door",matchCur()==="none"?"":(MATCH.find(o=>o[0]===matchCur())||[])[1]]]]);
+  R.push(["Door",3,[["Style",(d&&dSame(d)&&(d.n||d.name))||(fam.base==="rs"?"5″ Rail and Stile · customer spec · "+(fo.type==="stain"?"stained":"painted"):fam.n)||""],["Opening",(ftin(S.width_in)+" wide × "+ftin(S.height_in)+" high").replace(/\s+/g," ")],["Fold",S.doors+" doors · "+String(S.split).replace(/(\d+)L(\d+)R/,"$1 left, $2 right").replace(/^(\d+)L$/,"$1 left").replace(/^(\d+)R$/,"$1 right")],["Drive",S.motorized?"Automated":"Manual"],
+    ["Entry door in the fold",S.mandoor?"Door "+S.mandoor.door+" · hinged "+(S.mandoor.hinge==="R"?"right":"left"):(looseLeaves(S.split).length?"None":"")],["Heated / cooled",isT24()?"Yes · Title 24 · premium":"No"],["Threshold",isT24()?THR24[isDO()?1:0]:(isSunk()?"Sunken · ¼″ proud":"On the slab")],["Opening top",sit("arched_top")?"Arched · "+((sit("arched_top").fields||{}).rise||"12")+"″ rise · carriage pair, swings out":""],["Glass",onLabel("glass")],["Glass height",(S.glass&&S.glass!=="none"&&S.glass_h>0)?ghTxt(S.glass_h):""],["Glass options",(S.glass&&S.glass!=="none")?gNames().join(" · "):""],["Panel",slab?"":onLabel("panel")],["Panel stiles",stileOn()?STILES[stileCur()]:""],["Cladding",fam.base==="tbclad"?onLabel("cladding"):""],["Sidelites",sit("sidelites")?(SIDES.find(o=>o[0]===sideCur())||[])[1]:""],["Matching entry door",matchCur()==="none"?"":(MATCH.find(o=>o[0]===matchCur())||[])[1]]]]);
   R.push(["Color & hardware",4,[["Outside",fo.n],["Inside",fi.n],["Hardware",onLabel("hardware",/^(no man door|man door)/i)],["Casing",casCur()==="none"||isOOS()?"":(CASE.find(o=>o[0]===casCur())||[])[1]+" · color matched · add-on"]]]);
   if(delCur()||instCur()) R.push(["Delivery & install",7,[["Delivery",delCur()?(DELIV.find(o=>o[0]===delCur())||[])[1]+(DELB[delCur()]?" · "+DELB[delCur()]:"")+(isOOS()&&S.ship_state&&S.ship_state!=="CA"?" · "+S.ship_state:""):""],["Install",instCur()?(INST.find(o=>o[0]===instCur())||[])[1]:""]]]);
   if(S.rush) R.push(["Timing",7,[["Rush",S.need_by?"Need by "+S.need_by:"Yes"]]]);
@@ -1401,7 +1418,7 @@ window.__picks=picks;
 /* what the office record needs to prepopulate (book 2009 reads these keys into the sale spec the Agreement shares):
    track / system "E3" for a heated or cooled garage, threshold "sunken", the design and the hardware set - beside what conceptSpec already carries */
 { const _cs=conceptSpec; window.conceptSpec=conceptSpec=function(){ const o=_cs.apply(this,arguments), sp=(o&&o.spec&&typeof o.spec==="object")?o.spec:o;
-    try{ if(isT24()){ sp.track="E3"; sp.system="E3"; } if(isSunk()&&!isT24()) sp.threshold="sunken"; if(isDO()) sp.threshold="drive-over"; if(S.design) sp.design=S.design; if(!isOOS()&&casCur()!=="none"){ sp.casing_ext=/ext|both/.test(casCur()); sp.casing_int=/int|both/.test(casCur()); sp.casing_match=true; } if(instCur()) sp.install=instCur(); if(S.rush){ sp.rush=true; if(S.need_by) sp.need_by=S.need_by; } if(S.situations.existing_header) sp.existing_header={beam:hdr().type||undefined,size:hdr().size||undefined,description:hdr().desc||undefined}; if(delCur()){ sp.delivery=delCur(); sp.out_of_state=isOOS(); sp.ship_state=isOOS()?(S.ship_state||undefined):"CA"; sp.delivery_mode=isOOS()?"carrier":delCur()==="local"?"own_truck":undefined; } if(gSel().length&&S.glass&&S.glass!=="none") sp.glass_opts=gSel().slice(); if(S.mandoor&&S.hw_set) sp.hw_set=S.hw_set; sp.drive=S.motorized?"motorized":"manual"; }catch(e){ console.warn("flow spec",e); }
+    try{ if(isT24()){ sp.track="E3"; sp.system="E3"; } if(isSunk()&&!isT24()) sp.threshold="sunken"; if(isDO()) sp.threshold="drive-over"; if(stileOn()&&S.lower) sp.lower=S.lower; if(S.design) sp.design=S.design; if(!isOOS()&&casCur()!=="none"){ sp.casing_ext=/ext|both/.test(casCur()); sp.casing_int=/int|both/.test(casCur()); sp.casing_match=true; } if(instCur()) sp.install=instCur(); if(S.rush){ sp.rush=true; if(S.need_by) sp.need_by=S.need_by; } if(S.situations.existing_header) sp.existing_header={beam:hdr().type||undefined,size:hdr().size||undefined,description:hdr().desc||undefined}; if(delCur()){ sp.delivery=delCur(); sp.out_of_state=isOOS(); sp.ship_state=isOOS()?(S.ship_state||undefined):"CA"; sp.delivery_mode=isOOS()?"carrier":delCur()==="local"?"own_truck":undefined; } if(gSel().length&&S.glass&&S.glass!=="none") sp.glass_opts=gSel().slice(); if(S.mandoor&&S.hw_set) sp.hw_set=S.hw_set; sp.drive=S.motorized?"motorized":"manual"; }catch(e){ console.warn("flow spec",e); }
     return o; }; }
 const _show=stepShow;
 window.stepShow=stepShow=function(n){ if(snap(n)===7&&STEP!==7) grab(); _show(snap(n)); const N=idx();
